@@ -73,7 +73,6 @@ function Notification:Show(data)
 	frame.Parent = container
 	makeCorner(frame, 10)
 
-	-- Icon
 	if icon and icon ~= "" then
 		local iconLabel = Instance.new("ImageLabel")
 		iconLabel.Image = icon
@@ -84,7 +83,6 @@ function Notification:Show(data)
 		iconLabel.Parent = frame
 	end
 
-	-- Title
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Position = UDim2.new(0, 60, 0, 8)
@@ -96,7 +94,6 @@ function Notification:Show(data)
 	titleLabel.Text = title
 	titleLabel.Parent = frame
 
-	-- Message
 	local messageLabel = Instance.new("TextLabel")
 	messageLabel.BackgroundTransparency = 1
 	messageLabel.Position = UDim2.new(0, 60, 0, 30)
@@ -111,9 +108,9 @@ function Notification:Show(data)
 	messageLabel.Text = text
 	messageLabel.Parent = frame
 
-	-- Close button (TextButton)
 	local closeBtn = Instance.new("TextButton")
 	closeBtn.Text = "×"
+	closeBtn.TextColor3 = Color3.fromRGB(185, 185, 185)
 	closeBtn.TextScaled = true
 	closeBtn.BackgroundTransparency = 1
 	closeBtn.Size = UDim2.new(0, 24, 0, 24)
@@ -130,14 +127,12 @@ function Notification:Show(data)
 		frame:Destroy()
 	end)
 
-	-- Animation vào
 	frame.Position = UDim2.new(1, getScaledWidth() + 10, 0, 0)
 	TweenService:Create(frame, TweenInfo.new(0.25), {
 		Position = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = frameTransparency
 	}):Play()
 
-	-- Click frame callback
 	if data.OnClicked then
 		frame.InputBegan:Connect(function(input)
 			if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -146,7 +141,6 @@ function Notification:Show(data)
 		end)
 	end
 
-	-- Auto destroy sau duration
 	task.spawn(function()
 		task.wait(duration)
 		if frame and frame.Parent then
@@ -160,6 +154,5 @@ function Notification:Show(data)
 		end
 	end)
 end
-
 
 return setmetatable({}, Notification)
