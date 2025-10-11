@@ -62,7 +62,7 @@ function Notification:Show(data)
 	local bgColor = data.Background or Color3.fromRGB(25, 25, 25)
 	local textColor = data.TextColor or Color3.fromRGB(255, 255, 255)
 	local transparency = data.Transparency or false
-	local frameTransparency = transparency and 0.3 or 0
+	local frameTransparency = transparency and 0.4 or 0
 
 	local frame = Instance.new("Frame")
 	frame.Size = UDim2.new(1, 0, 0, math.clamp(workspace.CurrentCamera.ViewportSize.Y * 0.08, 60, 100))
@@ -111,9 +111,10 @@ function Notification:Show(data)
 	messageLabel.Text = text
 	messageLabel.Parent = frame
 
-	-- Close button (ImageButton)
-	local closeBtn = Instance.new("ImageButton")
-	closeBtn.Image = "rbxassetid://99967063680607"
+	-- Close button (TextButton)
+	local closeBtn = Instance.new("TextButton")
+	closeBtn.Text = "×"
+	closeBtn.TextScaled = true
 	closeBtn.BackgroundTransparency = 1
 	closeBtn.Size = UDim2.new(0, 24, 0, 24)
 	closeBtn.Position = UDim2.new(1, -30, 0, 6)
@@ -159,5 +160,6 @@ function Notification:Show(data)
 		end
 	end)
 end
+
 
 return setmetatable({}, Notification)
