@@ -1,0 +1,97 @@
+-- Pref Notification UI Library
+local Pref = {}
+local TweenService = game:GetService("TweenService")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "Pref Notification"
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
+
+local Container = Instance.new("Frame")
+Container.Parent = ScreenGui
+Container.BackgroundTransparency = 1
+Container.Size = UDim2.new(1, 0, 1, 0)
+Container.Position = UDim2.new(0, 0, 0, 0)
+
+local Holder = Instance.new("Frame")
+Holder.Parent = Container
+Holder.AnchorPoint = Vector2.new(0.5, 0)
+Holder.Position = UDim2.new(0.5, 0, 0, 20)
+Holder.BackgroundTransparency = 1
+Holder.Size = UDim2.new(0, 300, 0, 500)
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Parent = Holder
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 8)
+
+function Pref:Show(info)
+	info = info or {}
+
+	local Title = info.Title or "Notification"
+	local Decs = info.Decs or ""
+	local Duration = info.Duration or 5
+	local Transparency = info.Transparency or 0
+
+	local NotifyFrame = Instance.new("Frame")
+	NotifyFrame.Parent = Holder
+	NotifyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	NotifyFrame.BackgroundTransparency = Transparency
+	NotifyFrame.Size = UDim2.new(0, 320, 0, 80)
+	NotifyFrame.BorderSizePixel = 0
+	NotifyFrame.ClipsDescendants = true
+	NotifyFrame.AnchorPoint = Vector2.new(0.5, 0)
+	NotifyFrame.Position = UDim2.new(0.5, 0, 0, 0)
+
+	local UICorner = Instance.new("UICorner")
+	UICorner.CornerRadius = UDim.new(0, 8)
+	UICorner.Parent = NotifyFrame
+
+	local UIPadding = Instance.new("UIPadding")
+	UIPadding.PaddingLeft = UDim.new(0, 12)
+	UIPadding.PaddingRight = UDim.new(0, 12)
+	UIPadding.PaddingTop = UDim.new(0, 8)
+	UIPadding.PaddingBottom = UDim.new(0, 8)
+	UIPadding.Parent = NotifyFrame
+
+	local TitleLabel = Instance.new("TextLabel")
+	TitleLabel.Parent = NotifyFrame
+	TitleLabel.Text = Title
+	TitleLabel.Font = Enum.Font.GothamBold
+	TitleLabel.TextSize = 16
+	TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	TitleLabel.BackgroundTransparency = 1
+	TitleLabel.Size = UDim2.new(1, 0, 0, 22)
+	TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+	local DecsLabel = Instance.new("TextLabel")
+	DecsLabel.Parent = NotifyFrame
+	DecsLabel.Text = Decs
+	DecsLabel.Font = Enum.Font.Gotham
+	DecsLabel.TextSize = 14
+	DecsLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+	DecsLabel.BackgroundTransparency = 1
+	DecsLabel.Size = UDim2.new(1, 0, 1, -24)
+	DecsLabel.Position = UDim2.new(0, 0, 0, 22)
+	DecsLabel.TextXAlignment = Enum.TextXAlignment.Left
+	DecsLabel.TextWrapped = true
+
+	NotifyFrame.Position = UDim2.new(0.5, 0, 0, -90)
+	TweenService:Create(NotifyFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0.5, 0, 0, 0)
+	}):Play()
+
+	task.delay(Duration, function()
+
+		local tween = TweenService:Create(NotifyFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+			Position = UDim2.new(0.5, 0, 0, -90),
+			BackgroundTransparency = 1
+		})
+		tween:Play()
+		tween.Completed:Wait()
+		NotifyFrame:Destroy()
+	end)
+end
+
+return Pref
