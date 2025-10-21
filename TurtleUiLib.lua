@@ -937,4 +937,32 @@ function library:Window(name)
     return functions
 end
 
+function library:SetTheme(theme)
+    for i, win in pairs(TurtleUiLib:GetChildren()) do
+        if win:IsA("Frame") and win.Name == "UiWindow" then
+            win.BackgroundColor3 = theme.MainColor
+            local header = win:FindFirstChild("Header")
+            if header then
+                header.BackgroundColor3 = theme.HeaderColor
+                local minimise = header:FindFirstChild("Minimise")
+                if minimise then
+                    minimise.BackgroundColor3 = theme.HeaderColor
+                end
+            end
+            local window = win:FindFirstChild("Header"):FindFirstChild("Window")
+            if window then
+                window.BackgroundColor3 = theme.WindowColor
+                for _, btn in pairs(window:GetChildren()) do
+                    if btn:IsA("TextButton") then
+                        btn.BackgroundColor3 = theme.ButtonColor
+                        btn.TextColor3 = theme.ButtonTextColor
+                    elseif btn:IsA("TextLabel") then
+                        btn.TextColor3 = theme.ButtonTextColor
+                    end
+                end
+            end
+        end
+    end
+end
+
 return library
