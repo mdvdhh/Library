@@ -1,275 +1,208 @@
--- Roblox UI Library (single-file) -- Features: -- * Draggable window -- * UiCorner on elements -- * Toggle switch (with callback) -- * Button (with callback) -- * Sections (auto layout) -- Usage example at bottom (commented)
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
-local Players = game:GetService("Players") local TweenService = game:GetService("TweenService") local LocalPlayer = Players.LocalPlayer local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+-- Library
+local Library = {}
+Library.UI = Instance.new("ScreenGui")
+Library.UI.Name = "N8WR5A2K_UI"
+Library.UI.ResetOnSpawn = false
+Library.UI.Parent = CoreGui
 
-local Library = {} Library.__index = Library
+-- Dragging Function
+local function MakeDraggable(Frame, DragHandle)
+	local dragging, dragInput, dragStart, startPos
 
--- Utility: create Instance helper local function new(class, props) local obj = Instance.new(class) if props then for k, v in pairs(props) do if k == "Parent" then obj.Parent = v else pcall(function() obj[k] = v end) end end end return obj end
+	local function update(input)
+		local delta = input.Position - dragStart
+		Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
 
--- Draggable logic (frame) local function makeDraggable(frame, dragHandle) dragHandle = dragHandle or frame local dragging = false local dragStart = Vector2.new() local startPos = UDim2.new() local userInputService = game:GetService("UserInputService")
+	DragHandle.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = Frame.Position
 
-local function inputBegan(input, gameProcessed)
-    if gameProcessed then return end
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = frame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	DragHandle.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end)
 end
 
-local function inputChanged(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        if dragging then
-            local delta = input.Position - dragStart
-            local screenSize = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1920,1080)
-            local newX = startPos.X.Scale + (delta.X / screenSize.X)
-            local newY = startPos.Y.Scale + (delta.Y / screenSize.Y)
-            frame.Position = UDim2.new(newX, startPos.X.Offset + delta.X, newY, startPos.Y.Offset + delta.Y)
-        end
-    end
-end
+-- Create Window
+function Library:CreateWindow(title)
+	local Window = Instance.new("Frame")
+	Window.Name = "MainWindow"
+	Window.Parent = Library.UI
+	Window.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	Window.Size = UDim2.new(0, 350, 0, 400)
+	Window.Position = UDim2.new(0.5, -175, 0.5, -200)
+	Window.Active = true
 
-dragHandle.InputBegan:Connect(inputBegan)
-userInputService.InputChanged:Connect(inputChanged)
+	local UICorner = Instance.new("UICorner", Window)
+	UICorner.CornerRadius = UDim.new(0, 10)
 
-end
+	local TitleBar = Instance.new("Frame")
+	TitleBar.Name = "TitleBar"
+	TitleBar.Parent = Window
+	TitleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	TitleBar.Size = UDim2.new(1, 0, 0, 30)
 
--- Simple tween helper local function tween(instance, props, time, style, dir) local info = TweenInfo.new(time or 0.18, style or Enum.EasingStyle.Quad, dir or Enum.EasingDirection.Out) local tween = TweenService:Create(instance, info, props) tween:Play() return tween end
+	local TitleCorner = Instance.new("UICorner", TitleBar)
+	TitleCorner.CornerRadius = UDim.new(0, 10)
 
--- Creates the main window function Library:CreateWindow(opts) opts = opts or {} local titleText = opts.Title or "Window" local width = opts.Width or 420 local height = opts.Height or 300
+	local TitleLabel = Instance.new("TextLabel")
+	TitleLabel.Parent = TitleBar
+	TitleLabel.BackgroundTransparency = 1
+	TitleLabel.Size = UDim2.new(1, 0, 1, 0)
+	TitleLabel.Text = title or "UI Library"
+	TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	TitleLabel.TextScaled = true
+	TitleLabel.Font = Enum.Font.GothamBold
 
-local screenGui = new("ScreenGui", {Parent = PlayerGui, Name = opts.Name or "SimpleUILibrary"})
+	local Container = Instance.new("Frame")
+	Container.Name = "Container"
+	Container.Parent = Window
+	Container.BackgroundTransparency = 1
+	Container.Size = UDim2.new(1, 0, 1, -30)
+	Container.Position = UDim2.new(0, 0, 0, 30)
 
-local mainFrame = new("Frame", {
-    Parent = screenGui,
-    Name = "MainFrame",
-    AnchorPoint = Vector2.new(0.5, 0.5),
-    Position = UDim2.new(0.5, 0, 0.5, 0),
-    Size = UDim2.new(0, width, 0, height),
-    BackgroundColor3 = opts.BackgroundColor or Color3.fromRGB(30, 30, 30),
-    BorderSizePixel = 0,
-})
+	local UIList = Instance.new("UIListLayout", Container)
+	UIList.Padding = UDim.new(0, 8)
+	UIList.FillDirection = Enum.FillDirection.Vertical
+	UIList.SortOrder = Enum.SortOrder.LayoutOrder
 
--- UiCorner for mainFrame
-local mainCorner = new("UICorner", {Parent = mainFrame, CornerRadius = UDim.new(0, 10)})
+	MakeDraggable(Window, TitleBar)
 
--- Top bar (title + drag handle)
-local topBar = new("Frame", {
-    Parent = mainFrame,
-    Name = "TopBar",
-    Size = UDim2.new(1, 0, 0, 36),
-    BackgroundTransparency = 1,
-})
+	local WindowFuncs = {}
 
-local title = new("TextLabel", {
-    Parent = topBar,
-    Name = "Title",
-    Text = titleText,
-    TextColor3 = Color3.fromRGB(240,240,240),
-    BackgroundTransparency = 1,
-    Size = UDim2.new(1, -10, 1, 0),
-    Position = UDim2.new(0, 10, 0, 0),
-    Font = Enum.Font.GothamBold,
-    TextSize = 16,
-    TextXAlignment = Enum.TextXAlignment.Left,
-})
+	function WindowFuncs:CreateSection(name)
+		local Section = Instance.new("Frame")
+		Section.Parent = Container
+		Section.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+		Section.Size = UDim2.new(1, -10, 0, 40)
 
--- Content area
-local content = new("Frame", {
-    Parent = mainFrame,
-    Name = "Content",
-    Position = UDim2.new(0, 10, 0, 46),
-    Size = UDim2.new(1, -20, 1, -56),
-    BackgroundTransparency = 1,
-})
+		local SectionCorner = Instance.new("UICorner", Section)
+		SectionCorner.CornerRadius = UDim.new(0, 6)
 
--- ScrollingFrame for sections
-local scroll = new("ScrollingFrame", {
-    Parent = content,
-    Name = "Scroll",
-    Size = UDim2.new(1, 0, 1, 0),
-    CanvasSize = UDim2.new(0, 0, 0, 0),
-    ScrollBarThickness = 6,
-    BackgroundTransparency = 1,
-})
+		local Label = Instance.new("TextLabel")
+		Label.Parent = Section
+		Label.BackgroundTransparency = 1
+		Label.Size = UDim2.new(1, 0, 1, 0)
+		Label.Text = name or "Section"
+		Label.Font = Enum.Font.GothamBold
+		Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+		Label.TextScaled = true
 
-local uiList = new("UIListLayout", {Parent = scroll, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8)})
-local padding = new("UIPadding", {Parent = scroll, PaddingTop = UDim.new(0, 4), PaddingBottom = UDim.new(0, 4), PaddingLeft = UDim.new(0, 4), PaddingRight = UDim.new(0, 4)})
+		return Section
+	end
 
--- Update canvas size when layout changes
-uiList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    scroll.CanvasSize = UDim2.new(0, 0, 0, uiList.AbsoluteContentSize.Y + 8)
-end)
+	function WindowFuncs:CreateButton(text, callback)
+		local Button = Instance.new("TextButton")
+		Button.Parent = Container
+		Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+		Button.Size = UDim2.new(1, -10, 0, 35)
+		Button.Text = text or "Button"
+		Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+		Button.Font = Enum.Font.GothamBold
+		Button.TextScaled = true
 
--- Make window draggable
-makeDraggable(mainFrame, topBar)
+		local ButtonCorner = Instance.new("UICorner", Button)
+		ButtonCorner.CornerRadius = UDim.new(0, 6)
 
--- API for creating sections, buttons, toggles
-local window = {}
-window.Main = mainFrame
-window.ScreenGui = screenGui
-window.Content = scroll
+		Button.MouseButton1Click:Connect(function()
+			if callback then
+				callback()
+			end
+			TweenService:Create(Button, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}):Play()
+			task.wait(0.1)
+			TweenService:Create(Button, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+		end)
+	end
 
-function window:CreateSection(name)
-    local sectionFrame = new("Frame", {
-        Parent = scroll,
-        Name = name or "Section",
-        Size = UDim2.new(1, 0, 0, 60),
-        BackgroundColor3 = Color3.fromRGB(40,40,40),
-        BorderSizePixel = 0,
-        LayoutOrder = #scroll:GetChildren() + 1,
-    })
-    new("UICorner", {Parent = sectionFrame, CornerRadius = UDim.new(0, 8)})
+	function WindowFuncs:CreateToggle(text, default, callback)
+		local Toggle = Instance.new("Frame")
+		Toggle.Parent = Container
+		Toggle.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+		Toggle.Size = UDim2.new(1, -10, 0, 35)
 
-    local label = new("TextLabel", {
-        Parent = sectionFrame,
-        Name = "Label",
-        Text = name or "Section",
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, -12, 0, 24),
-        Position = UDim2.new(0, 6, 0, 6),
-        Font = Enum.Font.GothamSemibold,
-        TextSize = 14,
-        TextColor3 = Color3.fromRGB(230,230,230),
-        TextXAlignment = Enum.TextXAlignment.Left,
-    })
+		local ToggleCorner = Instance.new("UICorner", Toggle)
+		ToggleCorner.CornerRadius = UDim.new(0, 6)
 
-    local inner = new("Frame", {
-        Parent = sectionFrame,
-        Name = "Inner",
-        Position = UDim2.new(0, 6, 0, 36),
-        Size = UDim2.new(1, -12, 1, -42),
-        BackgroundTransparency = 1,
-    })
+		local Label = Instance.new("TextLabel")
+		Label.Parent = Toggle
+		Label.BackgroundTransparency = 1
+		Label.Size = UDim2.new(0.8, 0, 1, 0)
+		Label.Text = text or "Toggle"
+		Label.Font = Enum.Font.GothamBold
+		Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+		Label.TextScaled = true
+		Label.TextXAlignment = Enum.TextXAlignment.Left
+		Label.Position = UDim2.new(0.05, 0, 0, 0)
 
-    local list = new("UIListLayout", {Parent = inner, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6)})
+		local Switch = Instance.new("Frame")
+		Switch.Parent = Toggle
+		Switch.AnchorPoint = Vector2.new(1, 0.5)
+		Switch.Position = UDim2.new(0.95, 0, 0.5, 0)
+		Switch.Size = UDim2.new(0, 50, 0, 20)
+		Switch.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 
-    -- auto-size section based on content
-    list:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        local newHeight = 36 + list.AbsoluteContentSize.Y + 12
-        sectionFrame.Size = UDim2.new(1, 0, 0, math.max(newHeight, 64))
-    end)
+		local SwitchCorner = Instance.new("UICorner", Switch)
+		SwitchCorner.CornerRadius = UDim.new(1, 0)
 
-    local sectionApi = {}
-    function sectionApi:CreateButton(text, callback)
-        local btn = new("TextButton", {
-            Parent = inner,
-            Text = text or "Button",
-            Size = UDim2.new(1, 0, 0, 30),
-            BackgroundColor3 = Color3.fromRGB(60,60,60),
-            BorderSizePixel = 0,
-            Font = Enum.Font.Gotham,
-            TextSize = 14,
-            TextColor3 = Color3.fromRGB(240,240,240),
-            AutoButtonColor = false,
-            LayoutOrder = #inner:GetChildren() + 1,
-        })
-        new("UICorner", {Parent = btn, CornerRadius = UDim.new(0, 6)})
+		local Circle = Instance.new("Frame")
+		Circle.Parent = Switch
+		Circle.Size = UDim2.new(0, 20, 0, 20)
+		Circle.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+		Circle.Position = UDim2.new(0, 0, 0, 0)
 
-        btn.MouseEnter:Connect(function()
-            tween(btn, {BackgroundColor3 = Color3.fromRGB(72,72,72)}, 0.12)
-        end)
-        btn.MouseLeave:Connect(function()
-            tween(btn, {BackgroundColor3 = Color3.fromRGB(60,60,60)}, 0.12)
-        end)
-        btn.MouseButton1Click:Connect(function()
-            pcall(function() if callback then callback() end end)
-        end)
-        return btn
-    end
+		local CircleCorner = Instance.new("UICorner", Circle)
+		CircleCorner.CornerRadius = UDim.new(1, 0)
 
-    function sectionApi:CreateToggle(text, default, callback)
-        default = default or false
-        local container = new("Frame", {
-            Parent = inner,
-            Size = UDim2.new(1, 0, 0, 30),
-            BackgroundTransparency = 1,
-            LayoutOrder = #inner:GetChildren() + 1,
-        })
+		local toggled = default or false
+		if toggled then
+			Switch.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+			Circle.Position = UDim2.new(1, -20, 0, 0)
+		end
 
-        local label = new("TextLabel", {
-            Parent = container,
-            Text = text or "Toggle",
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1, -60, 1, 0),
-            Position = UDim2.new(0, 0, 0, 0),
-            Font = Enum.Font.Gotham,
-            TextSize = 14,
-            TextColor3 = Color3.fromRGB(230,230,230),
-            TextXAlignment = Enum.TextXAlignment.Left,
-        })
+		local function SetToggle(state)
+			toggled = state
+			if toggled then
+				TweenService:Create(Switch, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 170, 255)}):Play()
+				TweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(1, -20, 0, 0)}):Play()
+			else
+				TweenService:Create(Switch, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}):Play()
+				TweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0, 0, 0, 0)}):Play()
+			end
+			if callback then callback(toggled) end
+		end
 
-        local toggleBg = new("Frame", {
-            Parent = container,
-            Size = UDim2.new(0, 46, 0, 24),
-            Position = UDim2.new(1, -46, 0, 3),
-            BackgroundColor3 = default and Color3.fromRGB(85,170,255) or Color3.fromRGB(80,80,80),
-            BorderSizePixel = 0,
-        })
-        new("UICorner", {Parent = toggleBg, CornerRadius = UDim.new(1, 0)})
+		Switch.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				SetToggle(not toggled)
+			end
+		end)
 
-        local knob = new("Frame", {
-            Parent = toggleBg,
-            Size = UDim2.new(0, 18, 0, 18),
-            Position = default and UDim2.new(1, -20, 0, 3) or UDim2.new(0, 3, 0, 3),
-            BackgroundColor3 = Color3.fromRGB(255,255,255),
-            BorderSizePixel = 0,
-        })
-        new("UICorner", {Parent = knob, CornerRadius = UDim.new(1, 0)})
+		return SetToggle
+	end
 
-        local state = default
-        local function setState(s, instant)
-            state = s
-            if s then
-                tween(toggleBg, {BackgroundColor3 = Color3.fromRGB(85,170,255)}, instant and 0 or 0.16)
-                tween(knob, {Position = UDim2.new(1, -20, 0, 3)}, instant and 0 or 0.16)
-            else
-                tween(toggleBg, {BackgroundColor3 = Color3.fromRGB(80,80,80)}, instant and 0 or 0.16)
-                tween(knob, {Position = UDim2.new(0, 3, 0, 3)}, instant and 0 or 0.16)
-            end
-            pcall(function() if callback then callback(state) end end)
-        end
-
-        toggleBg.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                setState(not state)
-            end
-        end)
-        knob.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                setState(not state)
-            end
-        end)
-
-        -- expose API
-        return {
-            Set = setState,
-            Get = function() return state end,
-            Container = container,
-        }
-    end
-
-    return sectionApi
-end
-
--- window methods
-function window:Destroy()
-    if screenGui and screenGui.Parent then
-        screenGui:Destroy()
-    end
-end
-
-function window:SetTitle(newTitle)
-    title.Text = newTitle
-end
-
-return window
-
+	return WindowFuncs
 end
 
 return Library
