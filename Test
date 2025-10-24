@@ -1,155 +1,183 @@
---[[
-    8CI UI Library
-    Features: Window, Section, Button, Toggle
-    Usage example at the bottom
---]]
-
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
-local Library = {}
+local EightCI = {}
+local UI = {}
 
--- // Create Window
-function Library:CreateWindow(config)
-    local Window = Instance.new("ScreenGui")
-    Window.Name = config.Name or "8CI_Window"
-    Window.Parent = player:WaitForChild("PlayerGui")
+local oldGui = CoreGui:FindFirstChild("EightCI_Window")
+if oldGui then oldGui:Destroy() end
 
-    local Main = Instance.new("Frame")
-    Main.Name = "Main"
-    Main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Main.BorderSizePixel = 0
-    Main.Position = UDim2.new(0.5, -107, 0.5, -146)
-    Main.Size = UDim2.new(0, 214, 0, 292)
-    Main.Active = true
-    Main.Draggable = true
-    Main.Parent = Window
-
-    local UICorner = Instance.new("UICorner")
-    UICorner.Parent = Main
-
-    local TitleBar = Instance.new("Frame")
-    TitleBar.Name = "TitleBar"
-    TitleBar.BackgroundColor3 = Color3.fromRGB(95, 95, 95)
-    TitleBar.BackgroundTransparency = 1
-    TitleBar.BorderSizePixel = 0
-    TitleBar.Position = UDim2.new(0, 6, 0, 6)
-    TitleBar.Size = UDim2.new(0, 202, 0, 28)
-    TitleBar.Parent = Main
-
-    local Label = Instance.new("TextLabel")
-    Label.BackgroundTransparency = 1
-    Label.Size = UDim2.new(1, 0, 1, 0)
-    Label.Text = config.Title or "8CI Ui"
-    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Label.TextScaled = true
-    Label.Parent = TitleBar
-
-    local Scroll = Instance.new("ScrollingFrame")
-    Scroll.BackgroundTransparency = 1
-    Scroll.BorderSizePixel = 0
-    Scroll.ElasticBehavior = Enum.ElasticBehavior.Never
-    Scroll.Position = UDim2.new(0, 4, 0, 45)
-    Scroll.Size = UDim2.new(0, 206, 0, 241)
-    Scroll.ScrollBarThickness = 3
-    Scroll.Parent = Main
-
-    local UIList = Instance.new("UIListLayout")
-    UIList.Padding = UDim.new(0, 6)
-    UIList.Parent = Scroll
-
-    local UIPadding = Instance.new("UIPadding")
-    UIPadding.PaddingTop = UDim.new(0, 5)
-    UIPadding.PaddingLeft = UDim.new(0, 8)
-    UIPadding.PaddingRight = UDim.new(0, 8)
-    UIPadding.Parent = Scroll
-
-    local WindowTable = {}
-
-    -- // Section
-    function WindowTable:CreateSection(name)
-        local Section = Instance.new("TextLabel")
-        Section.BackgroundTransparency = 1
-        Section.Size = UDim2.new(1, 0, 0, 28)
-        Section.Text = name or "Section"
-        Section.TextColor3 = Color3.fromRGB(255, 255, 255)
-        Section.TextSize = 12
-        Section.TextXAlignment = Enum.TextXAlignment.Left
-        Section.Parent = Scroll
-        return Section
-    end
-
-    -- // Button
-    function WindowTable:CreateButton(name, callback)
-        local Button = Instance.new("TextButton")
-        Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        Button.BorderSizePixel = 0
-        Button.Size = UDim2.new(1, 0, 0, 32)
-        Button.Text = name or "Button"
-        Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-        Button.TextSize = 11
-        Button.Parent = Scroll
-
-        local Corner = Instance.new("UICorner")
-        Corner.Parent = Button
-
-        Button.MouseButton1Click:Connect(function()
-            pcall(callback)
-        end)
-
-        return Button
-    end
-
-    -- // Toggle
-    function WindowTable:CreateToggle(name, default, callback)
-        local Toggle = Instance.new("TextButton")
-        Toggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        Toggle.BorderSizePixel = 0
-        Toggle.Size = UDim2.new(1, 0, 0, 32)
-        Toggle.Text = ""
-        Toggle.Parent = Scroll
-
-        local Corner = Instance.new("UICorner")
-        Corner.Parent = Toggle
-
-        local Label = Instance.new("TextLabel")
-        Label.BackgroundTransparency = 1
-        Label.Position = UDim2.new(0, 9, 0, 3)
-        Label.Size = UDim2.new(0.7, 0, 0.8, 0)
-        Label.Text = name or "Toggle"
-        Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-        Label.TextSize = 12
-        Label.TextXAlignment = Enum.TextXAlignment.Left
-        Label.Parent = Toggle
-
-        local CheckBox = Instance.new("Frame")
-        CheckBox.BackgroundColor3 = Color3.fromRGB(113, 113, 113)
-        CheckBox.Position = UDim2.new(1, -28, 0.5, -12)
-        CheckBox.Size = UDim2.new(0, 24, 0, 24)
-        CheckBox.Parent = Toggle
-
-        local CheckCorner = Instance.new("UICorner")
-        CheckCorner.CornerRadius = UDim.new(1, 0)
-        CheckCorner.Parent = CheckBox
-
-        local enabled = default or false
-
-        local function updateState()
-            CheckBox.BackgroundColor3 = enabled and Color3.fromRGB(215, 215, 215) or Color3.fromRGB(113, 113, 113)
-            pcall(callback, enabled)
-        end
-
-        updateState()
-
-        Toggle.MouseButton1Click:Connect(function()
-            enabled = not enabled
-            updateState()
-        end)
-
-        return Toggle
-    end
-
-    return WindowTable
+local function Tween(obj, props, time, style)
+	style = style or Enum.EasingStyle.Quad
+	local tween = TweenService:Create(obj, TweenInfo.new(time or 0.2, style, Enum.EasingDirection.Out), props)
+	tween:Play()
+	return tween
 end
 
-return Library
+function EightCI:CreateWindow(config)
+	if UI.Window then UI.Window:Destroy() end
+
+	local Window = Instance.new("ScreenGui")
+	Window.Name = "EightCI_Window"
+	Window.IgnoreGuiInset = true
+	Window.Parent = CoreGui
+
+	local Main = Instance.new("Frame")
+	Main.Name = "Main"
+	Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+	Main.BorderSizePixel = 0
+	Main.Position = UDim2.new(0.5, -107, 0.5, -146)
+	Main.Size = UDim2.new(0, 214, 0, 292)
+	Main.Active = true
+	Main.Draggable = true
+	Main.Parent = Window
+
+	local MainCorner = Instance.new("UICorner")
+	MainCorner.CornerRadius = UDim.new(0, 8)
+	MainCorner.Parent = Main
+
+	local Title = Instance.new("TextLabel")
+	Title.BackgroundTransparency = 1
+	Title.Size = UDim2.new(1, 0, 0, 34)
+	Title.Text = config.Title or "EightCI Ui"
+	Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Title.TextSize = 18
+	Title.Font = Enum.Font.GothamBold
+	Title.Parent = Main
+
+	local Scroll = Instance.new("ScrollingFrame")
+	Scroll.BackgroundTransparency = 1
+	Scroll.BorderSizePixel = 0
+	Scroll.Position = UDim2.new(0, 0, 0, 40)
+	Scroll.Size = UDim2.new(1, 0, 1, -40)
+	Scroll.ScrollBarThickness = 3
+	Scroll.Parent = Main
+
+	local ListLayout = Instance.new("UIListLayout")
+	ListLayout.Padding = UDim.new(0, 8)
+	ListLayout.Parent = Scroll
+
+	local Padding = Instance.new("UIPadding")
+	Padding.PaddingTop = UDim.new(0, 6)
+	Padding.PaddingLeft = UDim.new(0, 8)
+	Padding.PaddingRight = UDim.new(0, 8)
+	Padding.Parent = Scroll
+
+	UI.Window = Window
+	UI.Scroll = Scroll
+end
+
+function EightCI:Button(config)
+	local btn = Instance.new("TextButton")
+	btn.Name = config.Title or "Button"
+	btn.Size = UDim2.new(1, -16, 0, 32)
+	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	btn.BorderSizePixel = 0
+	btn.Text = config.Title or "Button"
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.TextSize = 12
+	btn.Font = Enum.Font.Gotham
+	btn.AutoButtonColor = false
+	btn.Parent = UI.Scroll
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 6)
+	corner.Parent = btn
+
+	btn.MouseEnter:Connect(function()
+		Tween(btn, {BackgroundColor3 = Color3.fromRGB(0, 120, 255)}, 0.2)
+	end)
+	btn.MouseLeave:Connect(function()
+		Tween(btn, {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}, 0.2)
+	end)
+	btn.MouseButton1Click:Connect(function()
+		Tween(btn, {BackgroundColor3 = Color3.fromRGB(0, 255, 255)}, 0.1)
+		task.wait(0.1)
+		Tween(btn, {BackgroundColor3 = Color3.fromRGB(0, 120, 255)}, 0.2)
+		pcall(config.Callback)
+	end)
+end
+
+function EightCI:Toggle(config)
+	local container = Instance.new("Frame")
+	container.Name = config.Title or "Toggle"
+	container.Size = UDim2.new(1, -16, 0, 32)
+	container.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	container.BorderSizePixel = 0
+	container.Parent = UI.Scroll
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 6)
+	corner.Parent = container
+
+	local title = Instance.new("TextLabel")
+	title.BackgroundTransparency = 1
+	title.Size = UDim2.new(0.75, 0, 1, 0)
+	title.Position = UDim2.new(0.05, 0, 0, 0)
+	title.Text = config.Title or "Toggle"
+	title.TextColor3 = Color3.fromRGB(255, 255, 255)
+	title.Font = Enum.Font.Gotham
+	title.TextSize = 12
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.Parent = container
+
+	local switch = Instance.new("Frame")
+	switch.Size = UDim2.new(0, 40, 0, 20)
+	switch.Position = UDim2.new(1, -48, 0.5, -10)
+	switch.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+	switch.Parent = container
+
+	local switchCorner = Instance.new("UICorner")
+	switchCorner.CornerRadius = UDim.new(1, 0)
+	switchCorner.Parent = switch
+
+	local knob = Instance.new("Frame")
+	knob.Size = UDim2.new(0, 16, 0, 16)
+	knob.Position = UDim2.new(0, 2, 0.5, -8)
+	knob.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+	knob.Parent = switch
+
+	local knobCorner = Instance.new("UICorner")
+	knobCorner.CornerRadius = UDim.new(1, 0)
+	knobCorner.Parent = knob
+
+	local enabled = config.Default or false
+
+	local function Update()
+		if enabled then
+			Tween(switch, {BackgroundColor3 = Color3.fromRGB(0, 170, 255)}, 0.2)
+			Tween(knob, {Position = UDim2.new(1, -18, 0.5, -8), BackgroundColor3 = Color3.fromRGB(255, 255, 255)}, 0.2)
+			local glow = Instance.new("UIStroke")
+			glow.Thickness = 2
+			glow.Color = Color3.fromRGB(0, 200, 255)
+			glow.Parent = knob
+			task.delay(0.3, function()
+				if glow then glow:Destroy() end
+			end)
+		else
+			Tween(switch, {BackgroundColor3 = Color3.fromRGB(90, 90, 90)}, 0.2)
+			Tween(knob, {Position = UDim2.new(0, 2, 0.5, -8), BackgroundColor3 = Color3.fromRGB(200, 200, 200)}, 0.2)
+		end
+		pcall(config.Callback, enabled)
+	end
+
+	container.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			enabled = not enabled
+			Update()
+		end
+	end)
+
+	container.MouseEnter:Connect(function()
+		Tween(container, {BackgroundColor3 = Color3.fromRGB(130, 130, 130)}, 0.2)
+	end)
+	container.MouseLeave:Connect(function()
+		Tween(container, {BackgroundColor3 = Color3.fromRGB(255, 255, 255)}, 0.2)
+	end)
+
+	Update()
+end
+
+return EightCI
