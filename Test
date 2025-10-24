@@ -5,7 +5,6 @@ local player = Players.LocalPlayer
 
 local EightCI = {}
 
--- // Tween helper
 local function Tween(obj, props, duration, style, dir)
     style = style or Enum.EasingStyle.Quad
     dir = dir or Enum.EasingDirection.Out
@@ -15,12 +14,10 @@ local function Tween(obj, props, duration, style, dir)
     return tween
 end
 
--- // Reset Window nếu đã tồn tại
 if CoreGui:FindFirstChild("EightCI_Window") then
     CoreGui:FindFirstChild("EightCI_Window"):Destroy()
 end
 
--- // Create Window
 function EightCI:CreateWindow(config)
     local Window = Instance.new("ScreenGui")
     Window.Name = "EightCI_Window"
@@ -65,6 +62,20 @@ function EightCI:CreateWindow(config)
     local UIList = Instance.new("UIListLayout")
     UIList.Padding = UDim.new(0,6)
     UIList.Parent = Scroll
+
+    local ScrollLayout = Instance.new("UIListLayout")
+    ScrollLayout.Padding = UDim.new(0, 6)
+    ScrollLayout.Parent = EightCI.Scroll or EightCI.MainFrame:FindFirstChild("Scroll")
+
+    local ScrollPadding = Instance.new("UIPadding")
+    ScrollPadding.PaddingTop = UDim.new(0, 5)
+    ScrollPadding.PaddingLeft = UDim.new(0, 8)
+    ScrollPadding.PaddingRight = UDim.new(0, 8)
+    ScrollPadding.Parent = ScrollLayout.Parent
+
+    ScrollLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ScrollLayout.Parent.CanvasSize = UDim2.new(0,0,0,ScrollLayout.AbsoluteContentSize.Y + 5)
+end)
 
     local UIPadding = Instance.new("UIPadding")
     UIPadding.PaddingTop = UDim.new(0,5)
