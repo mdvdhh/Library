@@ -1,103 +1,155 @@
--- init.lua
-local Creator = require(script.modules.Creator)
-local CreateToggle = require(script.components.ui.Toggle).New
-local CreateSection = require(script.components.ui.Section).New
+--[[
+    8CI UI Library
+    Features: Window, Section, Button, Toggle
+    Usage example at the bottom
+--]]
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
 local Library = {}
-Library.__index = Library
 
--- 🪟 Tạo cửa sổ UI
-function Library:CreateWindow(title)
-	local ScreenGui = Instance.new("ScreenGui")
-	ScreenGui.Name = "MyUILibrary"
-	ScreenGui.ResetOnSpawn = false
-	ScreenGui.Parent = game:GetService("CoreGui")
+-- // Create Window
+function Library:CreateWindow(config)
+    local Window = Instance.new("ScreenGui")
+    Window.Name = config.Name or "8CI_Window"
+    Window.Parent = player:WaitForChild("PlayerGui")
 
-	local MainFrame = Instance.new("Frame")
-	MainFrame.Size = UDim2.new(0, 400, 0, 300)
-	MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
-	MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-	MainFrame.Active = true
-	MainFrame.Draggable = true
-	MainFrame.Parent = ScreenGui
+    local Main = Instance.new("Frame")
+    Main.Name = "Main"
+    Main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Main.BorderSizePixel = 0
+    Main.Position = UDim2.new(0.5, -107, 0.5, -146)
+    Main.Size = UDim2.new(0, 214, 0, 292)
+    Main.Active = true
+    Main.Draggable = true
+    Main.Parent = Window
 
-	local UICorner = Instance.new("UICorner", MainFrame)
-	UICorner.CornerRadius = UDim.new(0, 8)
+    local UICorner = Instance.new("UICorner")
+    UICorner.Parent = Main
 
-	local TitleLabel = Instance.new("TextLabel")
-	TitleLabel.Size = UDim2.new(1, 0, 0, 40)
-	TitleLabel.BackgroundTransparency = 1
-	TitleLabel.Text = title or "Window"
-	TitleLabel.Font = Enum.Font.GothamBold
-	TitleLabel.TextSize = 18
-	TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	TitleLabel.Parent = MainFrame
+    local TitleBar = Instance.new("Frame")
+    TitleBar.Name = "TitleBar"
+    TitleBar.BackgroundColor3 = Color3.fromRGB(95, 95, 95)
+    TitleBar.BackgroundTransparency = 1
+    TitleBar.BorderSizePixel = 0
+    TitleBar.Position = UDim2.new(0, 6, 0, 6)
+    TitleBar.Size = UDim2.new(0, 202, 0, 28)
+    TitleBar.Parent = Main
 
-	local Content = Instance.new("Frame")
-	Content.Size = UDim2.new(1, -20, 1, -60)
-	Content.Position = UDim2.new(0, 10, 0, 50)
-	Content.BackgroundTransparency = 1
-	Content.AutomaticSize = Enum.AutomaticSize.Y
-	Content.Parent = MainFrame
+    local Label = Instance.new("TextLabel")
+    Label.BackgroundTransparency = 1
+    Label.Size = UDim2.new(1, 0, 1, 0)
+    Label.Text = config.Title or "8CI Ui"
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.TextScaled = true
+    Label.Parent = TitleBar
 
-	local UIListLayout = Instance.new("UIListLayout", Content)
-	UIListLayout.Padding = UDim.new(0, 6)
-	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    local Scroll = Instance.new("ScrollingFrame")
+    Scroll.BackgroundTransparency = 1
+    Scroll.BorderSizePixel = 0
+    Scroll.ElasticBehavior = Enum.ElasticBehavior.Never
+    Scroll.Position = UDim2.new(0, 4, 0, 45)
+    Scroll.Size = UDim2.new(0, 206, 0, 241)
+    Scroll.ScrollBarThickness = 3
+    Scroll.Parent = Main
 
-	local window = setmetatable({
-		Main = MainFrame,
-		Content = Content,
-		Sections = {},
-	}, Library)
+    local UIList = Instance.new("UIListLayout")
+    UIList.Padding = UDim.new(0, 6)
+    UIList.Parent = Scroll
 
-	function window:CreateSection(title)
-		local _, Section = CreateSection({
-			Title = title,
-			Parent = self.Content,
-			Window = { ElementConfig = { UICorner = 6, UIPadding = 6 }, NewElements = true },
-			Tab = { Gap = 5 },
-			UIScale = 1,
-			ElementsModule = {
-				Load = function() end,
-				Elements = {},
-			},
-		})
-		table.insert(self.Sections, Section)
+    local UIPadding = Instance.new("UIPadding")
+    UIPadding.PaddingTop = UDim.new(0, 5)
+    UIPadding.PaddingLeft = UDim.new(0, 8)
+    UIPadding.PaddingRight = UDim.new(0, 8)
+    UIPadding.Parent = Scroll
 
-		-- Hỗ trợ gọi Section:CreateButton(), Section:CreateToggle()
-		function Section:CreateButton(name, callback)
-			local Button = Instance.new("TextButton")
-			Button.Size = UDim2.new(1, 0, 0, 35)
-			Button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-			Button.Text = name
-			Button.Font = Enum.Font.GothamBold
-			Button.TextSize = 16
-			Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-			Button.Parent = Section.UIElements.Main or self.Content
+    local WindowTable = {}
 
-			local UICorner = Instance.new("UICorner", Button)
-			UICorner.CornerRadius = UDim.new(0, 6)
+    -- // Section
+    function WindowTable:CreateSection(name)
+        local Section = Instance.new("TextLabel")
+        Section.BackgroundTransparency = 1
+        Section.Size = UDim2.new(1, 0, 0, 28)
+        Section.Text = name or "Section"
+        Section.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Section.TextSize = 12
+        Section.TextXAlignment = Enum.TextXAlignment.Left
+        Section.Parent = Scroll
+        return Section
+    end
 
-			Button.MouseButton1Click:Connect(function()
-				pcall(callback)
-			end)
-		end
+    -- // Button
+    function WindowTable:CreateButton(name, callback)
+        local Button = Instance.new("TextButton")
+        Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        Button.BorderSizePixel = 0
+        Button.Size = UDim2.new(1, 0, 0, 32)
+        Button.Text = name or "Button"
+        Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Button.TextSize = 11
+        Button.Parent = Scroll
 
-		function Section:CreateToggle(name, value, callback)
-			local _, Toggle = CreateToggle({
-				Title = name,
-				Value = value,
-				Parent = Section.UIElements.Main or self.Content,
-				Window = { NewElements = true },
-				Callback = callback,
-			})
-			return Toggle
-		end
+        local Corner = Instance.new("UICorner")
+        Corner.Parent = Button
 
-		return Section
-	end
+        Button.MouseButton1Click:Connect(function()
+            pcall(callback)
+        end)
 
-	return window
+        return Button
+    end
+
+    -- // Toggle
+    function WindowTable:CreateToggle(name, default, callback)
+        local Toggle = Instance.new("TextButton")
+        Toggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        Toggle.BorderSizePixel = 0
+        Toggle.Size = UDim2.new(1, 0, 0, 32)
+        Toggle.Text = ""
+        Toggle.Parent = Scroll
+
+        local Corner = Instance.new("UICorner")
+        Corner.Parent = Toggle
+
+        local Label = Instance.new("TextLabel")
+        Label.BackgroundTransparency = 1
+        Label.Position = UDim2.new(0, 9, 0, 3)
+        Label.Size = UDim2.new(0.7, 0, 0.8, 0)
+        Label.Text = name or "Toggle"
+        Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Label.TextSize = 12
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.Parent = Toggle
+
+        local CheckBox = Instance.new("Frame")
+        CheckBox.BackgroundColor3 = Color3.fromRGB(113, 113, 113)
+        CheckBox.Position = UDim2.new(1, -28, 0.5, -12)
+        CheckBox.Size = UDim2.new(0, 24, 0, 24)
+        CheckBox.Parent = Toggle
+
+        local CheckCorner = Instance.new("UICorner")
+        CheckCorner.CornerRadius = UDim.new(1, 0)
+        CheckCorner.Parent = CheckBox
+
+        local enabled = default or false
+
+        local function updateState()
+            CheckBox.BackgroundColor3 = enabled and Color3.fromRGB(215, 215, 215) or Color3.fromRGB(113, 113, 113)
+            pcall(callback, enabled)
+        end
+
+        updateState()
+
+        Toggle.MouseButton1Click:Connect(function()
+            enabled = not enabled
+            updateState()
+        end)
+
+        return Toggle
+    end
+
+    return WindowTable
 end
 
 return Library
