@@ -1,0 +1,103 @@
+-- init.lua
+local Creator = require(script.modules.Creator)
+local CreateToggle = require(script.components.ui.Toggle).New
+local CreateSection = require(script.components.ui.Section).New
+
+local Library = {}
+Library.__index = Library
+
+-- 🪟 Tạo cửa sổ UI
+function Library:CreateWindow(title)
+	local ScreenGui = Instance.new("ScreenGui")
+	ScreenGui.Name = "MyUILibrary"
+	ScreenGui.ResetOnSpawn = false
+	ScreenGui.Parent = game:GetService("CoreGui")
+
+	local MainFrame = Instance.new("Frame")
+	MainFrame.Size = UDim2.new(0, 400, 0, 300)
+	MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+	MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	MainFrame.Active = true
+	MainFrame.Draggable = true
+	MainFrame.Parent = ScreenGui
+
+	local UICorner = Instance.new("UICorner", MainFrame)
+	UICorner.CornerRadius = UDim.new(0, 8)
+
+	local TitleLabel = Instance.new("TextLabel")
+	TitleLabel.Size = UDim2.new(1, 0, 0, 40)
+	TitleLabel.BackgroundTransparency = 1
+	TitleLabel.Text = title or "Window"
+	TitleLabel.Font = Enum.Font.GothamBold
+	TitleLabel.TextSize = 18
+	TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	TitleLabel.Parent = MainFrame
+
+	local Content = Instance.new("Frame")
+	Content.Size = UDim2.new(1, -20, 1, -60)
+	Content.Position = UDim2.new(0, 10, 0, 50)
+	Content.BackgroundTransparency = 1
+	Content.AutomaticSize = Enum.AutomaticSize.Y
+	Content.Parent = MainFrame
+
+	local UIListLayout = Instance.new("UIListLayout", Content)
+	UIListLayout.Padding = UDim.new(0, 6)
+	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+	local window = setmetatable({
+		Main = MainFrame,
+		Content = Content,
+		Sections = {},
+	}, Library)
+
+	function window:CreateSection(title)
+		local _, Section = CreateSection({
+			Title = title,
+			Parent = self.Content,
+			Window = { ElementConfig = { UICorner = 6, UIPadding = 6 }, NewElements = true },
+			Tab = { Gap = 5 },
+			UIScale = 1,
+			ElementsModule = {
+				Load = function() end,
+				Elements = {},
+			},
+		})
+		table.insert(self.Sections, Section)
+
+		-- Hỗ trợ gọi Section:CreateButton(), Section:CreateToggle()
+		function Section:CreateButton(name, callback)
+			local Button = Instance.new("TextButton")
+			Button.Size = UDim2.new(1, 0, 0, 35)
+			Button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+			Button.Text = name
+			Button.Font = Enum.Font.GothamBold
+			Button.TextSize = 16
+			Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+			Button.Parent = Section.UIElements.Main or self.Content
+
+			local UICorner = Instance.new("UICorner", Button)
+			UICorner.CornerRadius = UDim.new(0, 6)
+
+			Button.MouseButton1Click:Connect(function()
+				pcall(callback)
+			end)
+		end
+
+		function Section:CreateToggle(name, value, callback)
+			local _, Toggle = CreateToggle({
+				Title = name,
+				Value = value,
+				Parent = Section.UIElements.Main or self.Content,
+				Window = { NewElements = true },
+				Callback = callback,
+			})
+			return Toggle
+		end
+
+		return Section
+	end
+
+	return window
+end
+
+return Library
