@@ -76,6 +76,7 @@ function EightCI:Button(config)
     Button.Text = config.Title or "Button"
     Button.TextColor3 = Color3.fromRGB(255,255,255)
     Button.TextSize = 11
+    Button.TextScaled = true
     Button.Parent = self.Scroll
 
     local Corner = Instance.new("UICorner")
@@ -106,6 +107,7 @@ function EightCI:Toggle(config)
     Label.Text = config.Title or "Toggle"
     Label.TextColor3 = Color3.fromRGB(255,255,255)
     Label.TextSize = 12
+    Label.TextScaled = true
     Label.TextXAlignment = Enum.TextXAlignment.Left
     Label.Parent = Toggle
 
@@ -122,7 +124,7 @@ function EightCI:Toggle(config)
     local enabled = config.Default or false
 
     local function updateState()
-        CheckBox.BackgroundColor3 = enabled and Color3.fromRGB(0,170,255) or Color3.fromRGB(113,113,113)
+        CheckBox.BackgroundColor3 = enabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(111, 111, 111)
         pcall(config.Callback, enabled)
     end
 
