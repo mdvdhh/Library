@@ -61,9 +61,10 @@ function EightCI:CreateWindow(cfg)
 	Scroll.Parent = Main
 
 	local Layout = Instance.new("UIListLayout")
-	Layout.Padding = UDim.new(0, 8)
-	Layout.SortOrder = Enum.SortOrder.LayoutOrder
-	Layout.Parent = Scroll
+    Layout.Padding = UDim.new(0, 8)
+    Layout.SortOrder = Enum.SortOrder.LayoutOrder
+    Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    Layout.Parent = Scroll
 
 	Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 		Scroll.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 10)
@@ -216,3 +217,4 @@ function EightCI:CreateWindow(cfg)
 end
 
 return EightCI
+
