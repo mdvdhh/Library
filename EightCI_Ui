@@ -138,4 +138,98 @@ function EightCI:Toggle(config)
     return Toggle
 end
 
+function EightCI:Slider(config)
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    SliderFrame.Size = UDim2.new(1,0,0,32)
+    SliderFrame.Parent = self.Scroll
+
+    local Corner = Instance.new("UICorner")
+    Corner.Parent = SliderFrame
+
+    local Label = Instance.new("TextLabel")
+    Label.BackgroundTransparency = 1
+    Label.Position = UDim2.new(0,5,0,0)
+    Label.Size = UDim2.new(0.6,0,1,0)
+    Label.Text = config.Title or "Slider"
+    Label.TextColor3 = Color3.fromRGB(255,255,255)
+    Label.TextSize = 12
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = SliderFrame
+
+    local ValueLabel = Instance.new("TextLabel")
+    ValueLabel.BackgroundTransparency = 1
+    ValueLabel.Position = UDim2.new(0.7,0,0,0)
+    ValueLabel.Size = UDim2.new(0.3, -5, 1, 0)
+    ValueLabel.Text = tostring(config.Default or 0)
+    ValueLabel.TextColor3 = Color3.fromRGB(255,255,255)
+    ValueLabel.TextSize = 12
+    ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
+    ValueLabel.Parent = SliderFrame
+
+    local Track = Instance.new("Frame")
+    Track.BackgroundColor3 = Color3.fromRGB(113,113,113)
+    Track.Size = UDim2.new(1, -10, 0, 8)
+    Track.Position = UDim2.new(0,5,0.5,-4)
+    Track.Parent = SliderFrame
+
+    local TrackCorner = Instance.new("UICorner")
+    TrackCorner.CornerRadius = UDim.new(1,0)
+    TrackCorner.Parent = Track
+
+    local Handle = Instance.new("TextButton")
+    Handle.BackgroundColor3 = Color3.fromRGB(0,170,255)
+    Handle.Size = UDim2.new(0,12,0,12)
+    Handle.Position = UDim2.new(0,0,0.5,-6)
+    Handle.Parent = Track
+
+    local HandleCorner = Instance.new("UICorner")
+    HandleCorner.CornerRadius = UDim.new(1,0)
+    HandleCorner.Parent = Handle
+
+    local min = config.Min or 0
+    local max = config.Max or 100
+    local value = config.Default or min
+
+    local dragging = false
+
+    local function updateValue(x)
+        local relative = math.clamp(x - Track.AbsolutePosition.X, 0, Track.AbsoluteSize.X)
+        local percent = relative / Track.AbsoluteSize.X
+        value = min + (max - min) * percent
+        value = math.round(value * (config.Round or 1)) / (config.Round or 1)
+        Handle.Position = UDim2.new(percent, -6, 0.5, -6)
+        ValueLabel.Text = tostring(value)
+        pcall(config.Callback, value)
+    end
+
+    local function inputBegan(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            updateValue(input.Position.X)
+        end
+    end
+
+    local function inputChanged(input)
+        if dragging then
+            updateValue(input.Position.X)
+        end
+    end
+
+    local function inputEnded(input)
+        if dragging then
+            dragging = false
+        end
+    end
+
+    Track.InputBegan:Connect(inputBegan)
+    Track.InputChanged:Connect(inputChanged)
+    Track.InputEnded:Connect(inputEnded)
+    Handle.InputBegan:Connect(inputBegan)
+    Handle.InputChanged:Connect(inputChanged)
+    Handle.InputEnded:Connect(inputEnded)
+
+    return SliderFrame
+end
+
 return EightCI
