@@ -1,0 +1,139 @@
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+local EightCI = {}
+
+if CoreGui:FindFirstChild("EightCI_Window") then
+    CoreGui:FindFirstChild("EightCI_Window"):Destroy()
+end
+
+function EightCI:CreateWindow(config)
+    local Window = Instance.new("ScreenGui")
+    Window.Name = "EightCI_Window"
+    Window.Parent = CoreGui
+
+    local Main = Instance.new("Frame")
+    Main.Name = "Main"
+    Main.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    Main.BorderSizePixel = 0
+    Main.Position = UDim2.new(0.5, -107, 0.5, -146)
+    Main.Size = UDim2.new(0, 214, 0, 292)
+    Main.Active = true
+    Main.Draggable = true
+    Main.Parent = Window
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.Parent = Main
+
+    local TitleBar = Instance.new("Frame")
+    TitleBar.BackgroundTransparency = 1
+    TitleBar.Size = UDim2.new(1,0,0,28)
+    TitleBar.Position = UDim2.new(0,6,0,6)
+    TitleBar.Parent = Main
+
+    local Label = Instance.new("TextLabel")
+    Label.BackgroundTransparency = 1
+    Label.Size = UDim2.new(1,0,1,0)
+    Label.Text = config.Title or "EightCI Ui"
+    Label.TextColor3 = Color3.fromRGB(255,255,255)
+    Label.TextScaled = true
+    Label.Parent = TitleBar
+
+    local Scroll = Instance.new("ScrollingFrame")
+    Scroll.BackgroundTransparency = 1
+    Scroll.BorderSizePixel = 0
+    Scroll.ElasticBehavior = Enum.ElasticBehavior.Never
+    Scroll.Position = UDim2.new(0,4,0,45)
+    Scroll.Size = UDim2.new(0,206,0,241)
+    Scroll.ScrollBarThickness = 3
+    Scroll.Parent = Main
+
+    local UIList = Instance.new("UIListLayout")
+    UIList.Padding = UDim.new(0,6)
+    UIList.Parent = Scroll
+
+    local UIPadding = Instance.new("UIPadding")
+    UIPadding.PaddingTop = UDim.new(0,5)
+    UIPadding.PaddingLeft = UDim.new(0,8)
+    UIPadding.PaddingRight = UDim.new(0,8)
+    UIPadding.Parent = Scroll
+
+    UIList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        Scroll.CanvasSize = UDim2.new(0,0,0,UIList.AbsoluteContentSize.Y + 5)
+    end)
+
+    self.MainFrame = Main
+    self.Scroll = Scroll
+end
+
+function EightCI:Button(config)
+    local Button = Instance.new("TextButton")
+    Button.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Button.BorderSizePixel = 0
+    Button.Size = UDim2.new(1,0,0,32)
+    Button.Text = config.Title or "Button"
+    Button.TextColor3 = Color3.fromRGB(255,255,255)
+    Button.TextSize = 11
+    Button.Parent = self.Scroll
+
+    local Corner = Instance.new("UICorner")
+    Corner.Parent = Button
+
+    Button.MouseButton1Click:Connect(function()
+        pcall(config.Callback)
+    end)
+
+    return Button
+end
+
+function EightCI:Toggle(config)
+    local Toggle = Instance.new("TextButton")
+    Toggle.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Toggle.BorderSizePixel = 0
+    Toggle.Size = UDim2.new(1,0,0,32)
+    Toggle.Text = ""
+    Toggle.Parent = self.Scroll
+
+    local Corner = Instance.new("UICorner")
+    Corner.Parent = Toggle
+
+    local Label = Instance.new("TextLabel")
+    Label.BackgroundTransparency = 1
+    Label.Position = UDim2.new(0,9,0,3)
+    Label.Size = UDim2.new(0.7,0,0.8,0)
+    Label.Text = config.Title or "Toggle"
+    Label.TextColor3 = Color3.fromRGB(255,255,255)
+    Label.TextSize = 12
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = Toggle
+
+    local CheckBox = Instance.new("Frame")
+    CheckBox.Position = UDim2.new(1,-28,0.5,-12)
+    CheckBox.Size = UDim2.new(0,24,0,24)
+    CheckBox.BackgroundColor3 = config.Default and Color3.fromRGB(0,170,255) or Color3.fromRGB(113,113,113)
+    CheckBox.Parent = Toggle
+
+    local CheckCorner = Instance.new("UICorner")
+    CheckCorner.CornerRadius = UDim.new(1,0)
+    CheckCorner.Parent = CheckBox
+
+    local enabled = config.Default or false
+
+    local function updateState()
+        CheckBox.BackgroundColor3 = enabled and Color3.fromRGB(0,170,255) or Color3.fromRGB(113,113,113)
+        pcall(config.Callback, enabled)
+    end
+
+    updateState()
+
+    Toggle.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        updateState()
+    end)
+
+    return Toggle
+end
+
+return EightCI
