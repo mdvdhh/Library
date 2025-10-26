@@ -62,6 +62,7 @@ function EightCI:CreateWindow(cfg)
 
 	local Layout = Instance.new("UIListLayout")
 	Layout.Padding = UDim.new(0, 8)
+	Layout.SortOrder = Enum.SortOrder.LayoutOrder
 	Layout.Parent = Scroll
 
 	Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
