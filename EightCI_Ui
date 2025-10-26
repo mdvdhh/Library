@@ -1,141 +1,220 @@
-local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService")
-local player = Players.LocalPlayer
-
 local EightCI = {}
-
-if CoreGui:FindFirstChild("EightCI_Window") then
-    CoreGui:FindFirstChild("EightCI_Window"):Destroy()
-end
+local CoreGui = game:GetService("CoreGui")
 
 function EightCI:CreateWindow(config)
-    local Window = Instance.new("ScreenGui")
-    Window.Name = "EightCI_Window"
-    Window.Parent = CoreGui
+    if CoreGui:FindFirstChild("EightCI_Window") then
+        CoreGui:FindFirstChild("EightCI_Window"):Destroy()
+    end
+
+    local Gui = Instance.new("ScreenGui")
+    Gui.Name = "EightCI_Window"
+    Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    Gui.Parent = CoreGui
 
     local Main = Instance.new("Frame")
     Main.Name = "Main"
-    Main.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    Main.Size = UDim2.new(0, 290, 0, 214)
+    Main.Position = UDim2.new(0, 230, 0, 32)
+    Main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     Main.BorderSizePixel = 0
-    Main.Position = UDim2.new(0.5, -107, 0.5, -146)
-    Main.Size = UDim2.new(0, 214, 0, 292)
-    Main.Active = true
-    Main.Draggable = true
-    Main.Parent = Window
-
-    local UICorner = Instance.new("UICorner")
-    UICorner.Parent = Main
-
-    local TitleBar = Instance.new("Frame")
-    TitleBar.BackgroundTransparency = 1
-    TitleBar.Size = UDim2.new(1,0,0,28)
-    TitleBar.Position = UDim2.new(0,6,0,6)
-    TitleBar.Parent = Main
-
-    local Label = Instance.new("TextLabel")
-    Label.BackgroundTransparency = 1
-    Label.Size = UDim2.new(1,0,1,0)
-    Label.Text = config.Title or "EightCI Ui"
-    Label.TextColor3 = Color3.fromRGB(255,255,255)
-    Label.TextScaled = true
-    Label.Parent = TitleBar
+    Main.Parent = Gui
+    Instance.new("UICorner", Main)
 
     local Scroll = Instance.new("ScrollingFrame")
+    Scroll.Size = UDim2.new(0, 284, 0, 173)
+    Scroll.Position = UDim2.new(0, 3, 0, 37)
     Scroll.BackgroundTransparency = 1
-    Scroll.BorderSizePixel = 0
-    Scroll.ElasticBehavior = Enum.ElasticBehavior.Never
-    Scroll.Position = UDim2.new(0,4,0,45)
-    Scroll.Size = UDim2.new(0,206,0,241)
     Scroll.ScrollBarThickness = 3
+    Scroll.ElasticBehavior = Enum.ElasticBehavior.Never
+    Scroll.HorizontalScrollBarInset = Enum.ScrollBarInset.ScrollBar
     Scroll.Parent = Main
 
-    local UIList = Instance.new("UIListLayout")
-    UIList.Padding = UDim.new(0,6)
-    UIList.Parent = Scroll
+    local Layout = Instance.new("UIListLayout")
+    Layout.Padding = UDim.new(0, 8)
+    Layout.Parent = Scroll
+    local Pad = Instance.new("UIPadding")
+    Pad.PaddingTop = UDim.new(0, 8)
+    Pad.PaddingLeft = UDim.new(0, 16)
+    Pad.Parent = Scroll
 
-    local UIPadding = Instance.new("UIPadding")
-    UIPadding.PaddingTop = UDim.new(0,5)
-    UIPadding.PaddingLeft = UDim.new(0,8)
-    UIPadding.PaddingRight = UDim.new(0,8)
-    UIPadding.Parent = Scroll
-
-    UIList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        Scroll.CanvasSize = UDim2.new(0,0,0,UIList.AbsoluteContentSize.Y + 5)
+    Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        Scroll.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 8)
     end)
 
-    self.MainFrame = Main
-    self.Scroll = Scroll
+    local Close = Instance.new("TextButton")
+    Close.Name = "CloseBtn"
+    Close.Text = "-"
+    Close.Size = UDim2.new(0, 36, 0, 26)
+    Close.Position = UDim2.new(0, 248, 0, 4)
+    Close.BackgroundTransparency = 1
+    Close.TextScaled = true
+    Close.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Close.Parent = Main
+
+    local TitleFrame = Instance.new("Frame")
+    TitleFrame.Name = "Title"
+    TitleFrame.Size = UDim2.new(0, 228, 0, 24)
+    TitleFrame.Position = UDim2.new(0, 16, 0, 6)
+    TitleFrame.BackgroundTransparency = 1
+    TitleFrame.Parent = Main
+
+    local TitleText = Instance.new("TextLabel")
+    TitleText.Text = config.Title or "EightCI Ui"
+    TitleText.Size = UDim2.new(0, 228, 0, 24)
+    TitleText.BackgroundTransparency = 1
+    TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleText.TextScaled = true
+    TitleText.TextXAlignment = Enum.TextXAlignment.Left
+    TitleText.Parent = TitleFrame
+
+    local Window = {Gui = Gui, Main = Main, Scroll = Scroll}
+    setmetatable(Window, {__index = self})
+    Close.MouseButton1Click:Connect(function()
+        Main.Visible = not Main.Visible
+    end)
+    return Window
+end
+
+function EightCI:OpenButton(config)
+    local OpenButton = Instance.new("Frame")
+    OpenButton.Name = "OpenButton"
+    OpenButton.Size = UDim2.new(0, 162, 0, 44)
+    OpenButton.Position = UDim2.new(0, 32, 0, 14)
+    OpenButton.BackgroundColor3 = Color3.fromRGB(6, 6, 6)
+    OpenButton.Parent = self.Gui
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = config.CornerRadius or UDim.new(0, 12)
+    Corner.Parent = OpenButton
+
+    local OpenText = Instance.new("TextButton")
+    OpenText.Name = "TextBtn"
+    OpenText.Text = config.Title or "Open"
+    OpenText.Size = UDim2.new(0, 82, 0, 32)
+    OpenText.Position = UDim2.new(0, 74, 0, 6)
+    OpenText.BackgroundTransparency = 1
+    OpenText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    OpenText.TextScaled = true
+    OpenText.Parent = OpenButton
+
+    local OpenIcon = Instance.new("ImageLabel")
+    OpenIcon.Image = config.Icon or "rbxassetid://844956"
+    OpenIcon.Size = UDim2.new(0, 31, 0, 31)
+    OpenIcon.Position = UDim2.new(0, 40, 0, 7)
+    OpenIcon.BackgroundTransparency = 1
+    OpenIcon.Parent = OpenButton
+
+    OpenText.MouseButton1Click:Connect(function()
+        self.Main.Visible = not self.Main.Visible
+    end)
 end
 
 function EightCI:Button(config)
     local Button = Instance.new("TextButton")
-    Button.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Button.Size = UDim2.new(1, -32, 0, 36)
+    Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     Button.BorderSizePixel = 0
-    Button.Size = UDim2.new(1,0,0,32)
-    Button.Text = config.Title or "Button"
-    Button.TextColor3 = Color3.fromRGB(255,255,255)
-    Button.TextSize = 11
-    Button.TextScaled = true
+    Button.Text = ""
     Button.Parent = self.Scroll
+    Instance.new("UICorner", Button)
 
-    local Corner = Instance.new("UICorner")
-    Corner.Parent = Button
+    local Icon = Instance.new("ImageLabel")
+    Icon.Image = config.Icon or "rbxassetid://12804017021"
+    Icon.Size = UDim2.new(0, 23, 0, 23)
+    Icon.Position = UDim2.new(0, 216, 0, 7)
+    Icon.BackgroundTransparency = 1
+    Icon.Parent = Button
+
+    local Title = Instance.new("TextLabel")
+    Title.Text = config.Title or "Button"
+    Title.Size = UDim2.new(0, 192, 0, 26)
+    Title.Position = UDim2.new(0, 10, 0, 5)
+    Title.BackgroundTransparency = 1
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextScaled = true
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Parent = Button
 
     Button.MouseButton1Click:Connect(function()
         pcall(config.Callback)
     end)
-
-    return Button
 end
 
 function EightCI:Toggle(config)
     local Toggle = Instance.new("TextButton")
-    Toggle.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Toggle.Size = UDim2.new(1, -32, 0, 36)
+    Toggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     Toggle.BorderSizePixel = 0
-    Toggle.Size = UDim2.new(1,0,0,32)
     Toggle.Text = ""
     Toggle.Parent = self.Scroll
-
-    local Corner = Instance.new("UICorner")
-    Corner.Parent = Toggle
-
-    local Label = Instance.new("TextLabel")
-    Label.BackgroundTransparency = 1
-    Label.Position = UDim2.new(0,9,0,3)
-    Label.Size = UDim2.new(0.7,0,0.8,0)
-    Label.Text = config.Title or "Toggle"
-    Label.TextColor3 = Color3.fromRGB(255,255,255)
-    Label.TextSize = 12
-    Label.TextScaled = true
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Parent = Toggle
+    Instance.new("UICorner", Toggle)
 
     local CheckBox = Instance.new("Frame")
-    CheckBox.Position = UDim2.new(1,-28,0.5,-12)
-    CheckBox.Size = UDim2.new(0,24,0,24)
-    CheckBox.BackgroundColor3 = config.Default and Color3.fromRGB(0,170,255) or Color3.fromRGB(113,113,113)
+    CheckBox.Size = UDim2.new(0, 26, 0, 26)
+    CheckBox.Position = UDim2.new(0, 215, 0, 5)
+    CheckBox.BackgroundColor3 = Color3.fromRGB(114, 114, 114)
+    CheckBox.BorderSizePixel = 0
     CheckBox.Parent = Toggle
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 4)
+    c.Parent = CheckBox
 
-    local CheckCorner = Instance.new("UICorner")
-    CheckCorner.CornerRadius = UDim.new(1,0)
-    CheckCorner.Parent = CheckBox
+    local TTitle = Instance.new("TextLabel")
+    TTitle.Text = config.Title or "Toggle"
+    TTitle.Size = UDim2.new(0, 192, 0, 26)
+    TTitle.Position = UDim2.new(0, 10, 0, 5)
+    TTitle.BackgroundTransparency = 1
+    TTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TTitle.TextScaled = true
+    TTitle.TextXAlignment = Enum.TextXAlignment.Left
+    TTitle.Parent = Toggle
 
-    local enabled = config.Default or false
-
-    local function updateState()
-        CheckBox.BackgroundColor3 = enabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(111, 111, 111)
-        pcall(config.Callback, enabled)
+    local state = config.Default or false
+    local function update()
+        CheckBox.BackgroundColor3 = state and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(114, 114, 114)
     end
-
-    updateState()
+    update()
 
     Toggle.MouseButton1Click:Connect(function()
-        enabled = not enabled
-        updateState()
+        state = not state
+        update()
+        pcall(config.Callback, state)
     end)
+end
 
-    return Toggle
+function EightCI:TextBox(config)
+    local BoxFrame = Instance.new("Frame")
+    BoxFrame.Size = UDim2.new(1, -32, 0, 36)
+    BoxFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    BoxFrame.BorderSizePixel = 0
+    BoxFrame.Parent = self.Scroll
+    Instance.new("UICorner", BoxFrame)
+
+    local BoxTitle = Instance.new("TextLabel")
+    BoxTitle.Text = config.Title or "TextBox"
+    BoxTitle.Size = UDim2.new(0, 138, 0, 26)
+    BoxTitle.Position = UDim2.new(0, 10, 0, 5)
+    BoxTitle.BackgroundTransparency = 1
+    BoxTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    BoxTitle.TextScaled = true
+    BoxTitle.TextXAlignment = Enum.TextXAlignment.Left
+    BoxTitle.Parent = BoxFrame
+
+    local TextBox = Instance.new("TextBox")
+    TextBox.Size = UDim2.new(0, 88, 0, 28)
+    TextBox.Position = UDim2.new(0, 156, 0, 4)
+    TextBox.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    TextBox.TextColor3 = Color3.fromRGB(242, 242, 242)
+    TextBox.TextScaled = true
+    TextBox.PlaceholderText = config.Placeholder or "Enter text..."
+    TextBox.Text = config.Default or ""
+    TextBox.Parent = BoxFrame
+    local cc = Instance.new("UICorner")
+    cc.CornerRadius = UDim.new(0, 4)
+    cc.Parent = TextBox
+
+    TextBox.FocusLost:Connect(function()
+        pcall(config.Callback, TextBox.Text)
+    end)
 end
 
 return EightCI
