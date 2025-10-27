@@ -1,0 +1,340 @@
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+for _, v in pairs(CoreGui:GetChildren()) do
+	if v:IsA("ScreenGui") and v.Name:match("EightCI_") then
+		v:Destroy()
+	end
+end
+
+local RandomName = ""
+local Characters = "QWERTYUIOPASDFGHJKLZXCVBNM123456789"
+for i = 1, 8 do
+	RandomName = RandomName .. string.sub(Characters, math.random(1, #Characters), math.random(1, #Characters))
+end
+
+local EightCI = {}
+
+function EightCI:CreateWindow(cfg)
+	local Gui = Instance.new("ScreenGui")
+	Gui.Name = "EightCI_" .. RandomName
+	Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	Gui.Parent = CoreGui
+
+	local Main = Instance.new("Frame")
+	Main.Name = "Main"
+	Main.Size = UDim2.new(0, 290, 0, 214)
+	Main.Position = UDim2.new(0, 230, 0, 32)
+	Main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	Main.BorderSizePixel = 0
+	Main.Active = true
+	Main.Draggable = true
+	Main.Parent = Gui
+	Instance.new("UICorner", Main)
+
+	local TitleFrame = Instance.new("Frame")
+	TitleFrame.Size = UDim2.new(0, 228, 0, 24)
+	TitleFrame.Position = UDim2.new(0, 16, 0, 6)
+	TitleFrame.BackgroundTransparency = 1
+	TitleFrame.Parent = Main
+
+	local TitleText = Instance.new("TextLabel")
+	TitleText.Text = cfg.Title or "EightCI Ui"
+	TitleText.Size = UDim2.new(0, 228, 0, 24)
+	TitleText.BackgroundTransparency = 1
+	TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+	TitleText.TextScaled = true
+	TitleText.TextXAlignment = Enum.TextXAlignment.Left
+	TitleText.Parent = TitleFrame
+
+	local Close = Instance.new("TextButton")
+	Close.Text = "-"
+	Close.Size = UDim2.new(0, 36, 0, 26)
+	Close.Position = UDim2.new(0, 248, 0, 4)
+	Close.BackgroundTransparency = 1
+	Close.TextScaled = true
+	Close.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Close.Parent = Main
+
+	local Scroll = Instance.new("ScrollingFrame")
+	Scroll.Size = UDim2.new(0, 284, 0, 173)
+	Scroll.Position = UDim2.new(0, 3, 0, 37)
+	Scroll.BackgroundTransparency = 1
+	Scroll.ScrollBarThickness = 3
+	Scroll.ElasticBehavior = Enum.ElasticBehavior.Never
+	Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+	Scroll.Parent = Main
+
+	local Layout = Instance.new("UIListLayout")
+	Layout.Padding = UDim.new(0, 8)
+	Layout.SortOrder = Enum.SortOrder.LayoutOrder
+	Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	Layout.Parent = Scroll
+
+	Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		Scroll.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 10)
+	end)
+
+	local Window = {}
+
+	function Window:OpenButton(data)
+		local OpenButton = Instance.new("Frame")
+		OpenButton.Name = "OpenButton"
+		OpenButton.Size = UDim2.new(0, 132, 0, 44)
+		OpenButton.Position = UDim2.new(0, 32, 0, 14)
+		OpenButton.BackgroundColor3 = Color3.fromRGB(6, 6, 6)
+		OpenButton.Visible = false
+		OpenButton.Active = true
+		OpenButton.Draggable = true
+		OpenButton.Parent = Gui
+
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = data.CornerRadius or UDim.new(0, 20)
+		corner.Parent = OpenButton
+
+		local OpenText = Instance.new("TextButton")
+		OpenText.Text = data.Title or "Open"
+		OpenText.Size = UDim2.new(0, 82, 0, 32)
+		OpenText.Position = UDim2.new(0, 43, 0, 6)
+		OpenText.BackgroundTransparency = 1
+		OpenText.TextColor3 = Color3.fromRGB(255, 255, 255)
+		OpenText.TextScaled = true
+		OpenText.Parent = OpenButton
+
+		local OpenIcon = Instance.new("ImageLabel")
+		OpenIcon.Image = data.Icon or "rbxassetid://844956"
+		OpenIcon.Size = UDim2.new(0, 31, 0, 31)
+		OpenIcon.Position = UDim2.new(0, 6, 0, 7)
+		OpenIcon.BackgroundTransparency = 1
+		OpenIcon.Parent = OpenButton
+
+		Close.MouseButton1Click:Connect(function()
+			Main.Visible = false
+			OpenButton.Visible = true
+		end)
+
+		OpenText.MouseButton1Click:Connect(function()
+			Main.Visible = true
+			OpenButton.Visible = false
+		end)
+	end
+
+	function Window:Button(data)
+		local Button = Instance.new("TextButton")
+		Button.Size = UDim2.new(0, 252, 0, 36)
+		Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+		Button.BorderSizePixel = 0
+		Button.Text = ""
+		Button.Parent = Scroll
+		Instance.new("UICorner", Button)
+
+		local Title = Instance.new("TextLabel")
+		Title.Text = data.Title or "Button"
+		Title.Size = UDim2.new(0, 192, 0, 26)
+		Title.Position = UDim2.new(0, 10, 0, 5)
+		Title.BackgroundTransparency = 1
+		Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+		Title.TextScaled = true
+		Title.TextXAlignment = Enum.TextXAlignment.Left
+		Title.Parent = Button
+
+		Button.MouseButton1Click:Connect(function()
+			pcall(data.Callback)
+		end)
+	end
+
+	function Window:Toggle(data)
+		local Toggle = Instance.new("TextButton")
+		Toggle.Size = UDim2.new(0, 252, 0, 36)
+		Toggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+		Toggle.BorderSizePixel = 0
+		Toggle.Text = ""
+		Toggle.Parent = Scroll
+		Instance.new("UICorner", Toggle)
+
+		local TTitle = Instance.new("TextLabel")
+		TTitle.Text = data.Title or "Toggle"
+		TTitle.Size = UDim2.new(0, 192, 0, 26)
+		TTitle.Position = UDim2.new(0, 10, 0, 5)
+		TTitle.BackgroundTransparency = 1
+		TTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+		TTitle.TextScaled = true
+		TTitle.TextXAlignment = Enum.TextXAlignment.Left
+		TTitle.Parent = Toggle
+
+		local CheckBox = Instance.new("Frame")
+		CheckBox.Size = UDim2.new(0, 26, 0, 26)
+		CheckBox.Position = UDim2.new(0, 215, 0, 5)
+		CheckBox.BackgroundColor3 = data.Default and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(114, 114, 114)
+		CheckBox.BorderSizePixel = 0
+		CheckBox.Parent = Toggle
+		local c = Instance.new("UICorner")
+		c.CornerRadius = UDim.new(0, 4)
+		c.Parent = CheckBox
+
+		local state = data.Default or false
+		Toggle.MouseButton1Click:Connect(function()
+			state = not state
+			CheckBox.BackgroundColor3 = state and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(114, 114, 114)
+			pcall(data.Callback, state)
+		end)
+	end
+
+	function Window:TextBox(data)
+		local BoxFrame = Instance.new("Frame")
+		BoxFrame.Size = UDim2.new(0, 252, 0, 36)
+		BoxFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+		BoxFrame.BorderSizePixel = 0
+		BoxFrame.Parent = Scroll
+		Instance.new("UICorner", BoxFrame)
+
+		local BoxTitle = Instance.new("TextLabel")
+		BoxTitle.Text = data.Title or "TextBox"
+		BoxTitle.Size = UDim2.new(0, 138, 0, 26)
+		BoxTitle.Position = UDim2.new(0, 10, 0, 5)
+		BoxTitle.BackgroundTransparency = 1
+		BoxTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+		BoxTitle.TextScaled = true
+		BoxTitle.TextXAlignment = Enum.TextXAlignment.Left
+		BoxTitle.Parent = BoxFrame
+
+		local TextBox = Instance.new("TextBox")
+		TextBox.Size = UDim2.new(0, 88, 0, 28)
+		TextBox.Position = UDim2.new(0, 156, 0, 4)
+		TextBox.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+		TextBox.TextColor3 = Color3.fromRGB(242, 242, 242)
+		TextBox.TextScaled = true
+		TextBox.PlaceholderText = data.Placeholder or "Enter Text..."
+		TextBox.Text = ""
+		TextBox.Parent = BoxFrame
+		local cc = Instance.new("UICorner")
+		cc.CornerRadius = UDim.new(0, 4)
+		cc.Parent = TextBox
+
+		TextBox.FocusLost:Connect(function(enter)
+			if enter then
+				pcall(data.Callback, TextBox.Text)
+			end
+		end)
+	end
+	
+	function Window:Slider(data)
+    local Slider = Instance.new("Frame")
+    Slider.BorderSizePixel = 0
+    Slider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    Slider.Size = UDim2.new(0, 252, 0, 46)
+    Slider.Parent = Scroll
+    Instance.new("UICorner", Slider)
+
+    local Title = Instance.new("TextLabel")
+    Title.TextWrapped = true
+    Title.BorderSizePixel = 0
+    Title.TextScaled = true
+    Title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.BackgroundTransparency = 1
+    Title.Size = UDim2.new(0, 186, 0, 14)
+    Title.Text = data.Title or "Slider"
+    Title.Position = UDim2.new(0, 10, 0, 6)
+    Title.Parent = Slider
+
+    local ValueLabel = Instance.new("TextLabel")
+    ValueLabel.TextWrapped = true
+    ValueLabel.BorderSizePixel = 0
+    ValueLabel.TextScaled = true
+    ValueLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ValueLabel.BackgroundTransparency = 1
+    ValueLabel.Size = UDim2.new(0, 36, 0, 18)
+    ValueLabel.Text = tostring(data.Value.Default or 1)
+    ValueLabel.Position = UDim2.new(0, 208, 0, 6)
+    ValueLabel.Parent = Slider
+
+    local Track = Instance.new("Frame")
+    Track.BorderSizePixel = 0
+    Track.BackgroundColor3 = Color3.fromRGB(140, 140, 140)
+    Track.Size = UDim2.new(0, 236, 0, 3)
+    Track.Position = UDim2.new(0, 8, 0, 33)
+    Track.Parent = Slider
+
+    local UICorner_Track = Instance.new("UICorner")
+    UICorner_Track.CornerRadius = UDim.new(1, 0)
+    UICorner_Track.Parent = Track
+
+    local Fill = Instance.new("Frame")
+    Fill.BorderSizePixel = 0
+    Fill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Fill.Size = UDim2.new(0, 0, 0, 3)
+    Fill.Parent = Track
+
+    local UICorner_Fill = Instance.new("UICorner")
+    UICorner_Fill.CornerRadius = UDim.new(1, 0)
+    UICorner_Fill.Parent = Fill
+
+    local Handle = Instance.new("TextButton")
+    Handle.BorderSizePixel = 0
+    Handle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Handle.Size = UDim2.new(0, 13, 0, 13)
+    Handle.Text = ""
+    Handle.Position = UDim2.new(0, 0, 0, -5)
+    Handle.Parent = Track
+
+    local UICorner_Handle = Instance.new("UICorner")
+    UICorner_Handle.CornerRadius = UDim.new(1, 0)
+    UICorner_Handle.Parent = Handle
+
+    local min = data.Value.Min or 0
+    local max = data.Value.Max or 100
+    local step = data.Step or 1
+    local current = data.Value.Default or min
+    local dragging = false
+
+    local function setValueFromX(x)
+        local relative = math.clamp(x - Track.AbsolutePosition.X, 0, Track.AbsoluteSize.X)
+        local percent = relative / Track.AbsoluteSize.X
+        local value = math.clamp(min + ((max - min) * percent), min, max)
+        value = math.floor(value / step + 0.5) * step
+        current = value
+        ValueLabel.Text = tostring(value)
+        Fill.Size = UDim2.new(0, relative, 0, 3)
+        Handle.Position = UDim2.new(0, relative - 6, 0, -5)
+        pcall(data.Callback, value)
+    end
+
+    local function updateHandlePosition(value)
+        local percent = (value - min) / (max - min)
+        local relative = Track.AbsoluteSize.X * percent
+        Fill.Size = UDim2.new(0, relative, 0, 3)
+        Handle.Position = UDim2.new(0, relative - 6, 0, -5)
+    end
+
+    updateHandlePosition(current)
+
+    local UserInputService = game:GetService("UserInputService")
+
+    Handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+        end
+    end)
+
+    Handle.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            setValueFromX(input.Position.X)
+        end
+    end)
+
+    return Slider
+end
+
+	return Window
+end
+
+return EightCI
