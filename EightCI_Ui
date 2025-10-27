@@ -218,8 +218,11 @@ function EightCI:CreateWindow(cfg)
 			end
 		end)
 	end
-	
-	function Window:Slider(data)
+
+function Window:Slider(data)
+    local TweenService = game:GetService("TweenService")
+    local UserInputService = game:GetService("UserInputService")
+
     local Slider = Instance.new("Frame")
     Slider.BorderSizePixel = 0
     Slider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
@@ -290,6 +293,15 @@ function EightCI:CreateWindow(cfg)
     local current = data.Value.Default or min
     local dragging = false
 
+    local function tweenFillAndHandle(relative)
+        TweenService:Create(Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, relative, 0, 3)
+        }):Play()
+        TweenService:Create(Handle, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0, relative - 6, 0, -5)
+        }):Play()
+    end
+
     local function setValueFromX(x)
         local relative = math.clamp(x - Track.AbsolutePosition.X, 0, Track.AbsoluteSize.X)
         local percent = relative / Track.AbsoluteSize.X
@@ -297,21 +309,17 @@ function EightCI:CreateWindow(cfg)
         value = math.floor(value / step + 0.5) * step
         current = value
         ValueLabel.Text = tostring(value)
-        Fill.Size = UDim2.new(0, relative, 0, 3)
-        Handle.Position = UDim2.new(0, relative - 6, 0, -5)
+        tweenFillAndHandle(relative)
         pcall(data.Callback, value)
     end
 
     local function updateHandlePosition(value)
         local percent = (value - min) / (max - min)
         local relative = Track.AbsoluteSize.X * percent
-        Fill.Size = UDim2.new(0, relative, 0, 3)
-        Handle.Position = UDim2.new(0, relative - 6, 0, -5)
+        tweenFillAndHandle(relative)
     end
 
     updateHandlePosition(current)
-
-    local UserInputService = game:GetService("UserInputService")
 
     Handle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -336,5 +344,6 @@ end
 
 	return Window
 end
+
 
 return EightCI
