@@ -220,7 +220,6 @@ function EightCI:CreateWindow(cfg)
 	end
 
 function Window:Slider(data)
-    local TweenService = game:GetService("TweenService")
     local RunService = game:GetService("RunService")
     local UserInputService = game:GetService("UserInputService")
 
@@ -284,22 +283,23 @@ function Window:Slider(data)
     local step = data.Step or 1
     local current = data.Value.Default or min
     local dragging = false
-    local mouseX = 0
+    local targetX = 0
 
-    local function updateSlider(relative)
+    local function lerp(a, b, t)
+        return a + (b - a) * t
+    end
+
+    local function setTargetFromMouse(x)
+        targetX = math.clamp(x - Track.AbsolutePosition.X, 0, Track.AbsoluteSize.X)
+    end
+
+    local function updateValue(relative)
         local percent = relative / Track.AbsoluteSize.X
         local value = math.clamp(min + ((max - min) * percent), min, max)
         value = math.floor(value / step + 0.5) * step
         current = value
         ValueLabel.Text = tostring(value)
-
-        Fill.Size = UDim2.new(0, relative, 0, 3)
-        Handle.Position = UDim2.new(0, relative - 6, 0, -5)
         pcall(data.Callback, value)
-    end
-
-    local function setSliderFromMouse(x)
-        mouseX = math.clamp(x - Track.AbsolutePosition.X, 0, Track.AbsoluteSize.X)
     end
 
     Handle.InputBegan:Connect(function(input)
@@ -316,18 +316,24 @@ function Window:Slider(data)
 
     UserInputService.InputChanged:Connect(function(input)
         if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            setSliderFromMouse(input.Position.X)
+            setTargetFromMouse(input.Position.X)
         end
     end)
 
-    RunService.RenderStepped:Connect(function()
-        if dragging then
-            updateSlider(mouseX)
+    RunService.RenderStepped:Connect(function(delta)
+        if dragging or math.abs(Handle.Position.X.Offset - targetX + 6) > 0.5 then
+            -- Lerp để di chuyển mượt
+            local currentX = Handle.Position.X.Offset + 0
+            local newX = lerp(currentX + 6, targetX, math.clamp(delta * 15, 0, 1)) - 6
+            Handle.Position = UDim2.new(0, newX, 0, -5)
+            Fill.Size = UDim2.new(0, newX + 6, 0, 3)
+            updateValue(newX + 6)
         end
     end)
 
-    local initialRelative = ((current - min) / (max - min)) * Track.AbsoluteSize.X
-    updateSlider(initialRelative)
+    targetX = ((current - min) / (max - min)) * Track.AbsoluteSize.X
+    Handle.Position = UDim2.new(0, targetX - 6, 0, -5)
+    Fill.Size = UDim2.new(0, targetX, 0, 3)
 
     return Slider
 end
@@ -337,4 +343,3 @@ end
 
 
 return EightCI
-
