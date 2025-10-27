@@ -221,6 +221,7 @@ function EightCI:CreateWindow(cfg)
 
 function Window:Slider(data)
     local TweenService = game:GetService("TweenService")
+    local RunService = game:GetService("RunService")
     local UserInputService = game:GetService("UserInputService")
 
     local Slider = Instance.new("Frame")
@@ -260,20 +261,14 @@ function Window:Slider(data)
     Track.Size = UDim2.new(0, 236, 0, 3)
     Track.Position = UDim2.new(0, 8, 0, 33)
     Track.Parent = Slider
-
-    local UICorner_Track = Instance.new("UICorner")
-    UICorner_Track.CornerRadius = UDim.new(1, 0)
-    UICorner_Track.Parent = Track
+    Instance.new("UICorner", Track)
 
     local Fill = Instance.new("Frame")
     Fill.BorderSizePixel = 0
     Fill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Fill.Size = UDim2.new(0, 0, 0, 3)
     Fill.Parent = Track
-
-    local UICorner_Fill = Instance.new("UICorner")
-    UICorner_Fill.CornerRadius = UDim.new(1, 0)
-    UICorner_Fill.Parent = Fill
+    Instance.new("UICorner", Fill)
 
     local Handle = Instance.new("TextButton")
     Handle.BorderSizePixel = 0
@@ -282,44 +277,30 @@ function Window:Slider(data)
     Handle.Text = ""
     Handle.Position = UDim2.new(0, 0, 0, -5)
     Handle.Parent = Track
-
-    local UICorner_Handle = Instance.new("UICorner")
-    UICorner_Handle.CornerRadius = UDim.new(1, 0)
-    UICorner_Handle.Parent = Handle
+    Instance.new("UICorner", Handle)
 
     local min = data.Value.Min or 0
     local max = data.Value.Max or 100
     local step = data.Step or 1
     local current = data.Value.Default or min
     local dragging = false
+    local mouseX = 0
 
-    local function tweenFillAndHandle(relative)
-        TweenService:Create(Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, relative, 0, 3)
-        }):Play()
-        TweenService:Create(Handle, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0, relative - 6, 0, -5)
-        }):Play()
-    end
-
-    local function setValueFromX(x)
-        local relative = math.clamp(x - Track.AbsolutePosition.X, 0, Track.AbsoluteSize.X)
+    local function updateSlider(relative)
         local percent = relative / Track.AbsoluteSize.X
         local value = math.clamp(min + ((max - min) * percent), min, max)
         value = math.floor(value / step + 0.5) * step
         current = value
         ValueLabel.Text = tostring(value)
-        tweenFillAndHandle(relative)
+
+        Fill.Size = UDim2.new(0, relative, 0, 3)
+        Handle.Position = UDim2.new(0, relative - 6, 0, -5)
         pcall(data.Callback, value)
     end
 
-    local function updateHandlePosition(value)
-        local percent = (value - min) / (max - min)
-        local relative = Track.AbsoluteSize.X * percent
-        tweenFillAndHandle(relative)
+    local function setSliderFromMouse(x)
+        mouseX = math.clamp(x - Track.AbsolutePosition.X, 0, Track.AbsoluteSize.X)
     end
-
-    updateHandlePosition(current)
 
     Handle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -335,9 +316,18 @@ function Window:Slider(data)
 
     UserInputService.InputChanged:Connect(function(input)
         if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            setValueFromX(input.Position.X)
+            setSliderFromMouse(input.Position.X)
         end
     end)
+
+    RunService.RenderStepped:Connect(function()
+        if dragging then
+            updateSlider(mouseX)
+        end
+    end)
+
+    local initialRelative = ((current - min) / (max - min)) * Track.AbsoluteSize.X
+    updateSlider(initialRelative)
 
     return Slider
 end
@@ -347,3 +337,4 @@ end
 
 
 return EightCI
+
