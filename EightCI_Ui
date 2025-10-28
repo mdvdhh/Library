@@ -157,7 +157,7 @@ end
 function EightCI:Button(data)
 	local Button = createBase(self.Scroll)
 	local Title = Instance.new("TextLabel")
-	Title.Text = data.Title or "Button"
+	Title.Text = data.Title or ""
 	Title.Size = UDim2.new(0, 192, 0, 26)
 	Title.Position = UDim2.new(0, 10, 0, 5)
 	Title.BackgroundTransparency = 1
