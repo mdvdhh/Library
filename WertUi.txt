@@ -1,0 +1,256 @@
+local WertUi = {}
+WertUi.__index = WertUi
+
+local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local function createUICorner(parent, radius)
+    local corner = Instance.new("UICorner", parent)
+    corner.CornerRadius = radius or UDim.new(0, 6)
+    return corner
+end
+
+-- Tạo tên ngẫu nhiên cho ScreenGui
+local RandomName = ""
+local Characters = "QWERTYUIOPASDFGHJKLZXCVBNM123456789"
+for i = 1, 8 do
+    local idx = math.random(1, #Characters)
+    RandomName = RandomName .. Characters:sub(idx, idx)
+end
+
+local combining = {
+    "̐","̑","̒","̓","̔","̕","̖","̗","̘","̙","̚",
+    "̛","̃","̄","̅","̇","̈","̉","͊","͋","͌","͍",
+    "͎","̸","̷","̶","̺","̻","͠","͡","ͣ","ͤ","ͥ",
+    "ͦ","ͧ","ͨ","ͩ","ͪ","ͫ","ͬ","ͭ","ͮ","ͯ"
+}
+
+local function zalgo(str, intensity)
+    intensity = intensity or 2
+    local res = {}
+    for i = 1, #str do
+        local ch = str:sub(i,i)
+        table.insert(res, ch)
+        local num = math.random(0, intensity)
+        for j = 1, num do
+            local mark = combining[math.random(1,#combining)]
+            table.insert(res, mark)
+        end
+    end
+    return table.concat(res)
+end
+
+local RandomZalgoName = zalgo(RandomName, 3)
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = RandomZalgoName
+screenGui.Parent = game:GetService("CoreGui") 
+    
+    local mainFrame = Instance.new("Frame", screenGui)
+    mainFrame.Name = "Main"
+    mainFrame.Size = UDim2.new(0, 408, 0, 236)
+    mainFrame.Position = UDim2.new(0, 208, 0, 18)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Active = true
+    mainFrame.Draggable = true
+    createUICorner(mainFrame)
+    
+    local mainStroke = Instance.new("UIStroke", mainFrame)
+    mainStroke.Transparency = 0.7
+    mainStroke.Thickness = 3
+
+    local topbar = Instance.new("Frame", mainFrame)
+    topbar.Name = "Topbar"
+    topbar.Size = UDim2.new(0,400,0,22)
+    topbar.Position = UDim2.new(0,4,0,4)
+    topbar.BackgroundTransparency = 1
+
+    local title = Instance.new("TextLabel", topbar)
+    title.Name = "Title"
+    title.Text = options.Title or "WertUi"
+    title.Size = UDim2.new(0,297,0,22)
+    title.Position = UDim2.new(0,12,0,0)
+    title.BackgroundTransparency = 1
+    title.TextScaled = true
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.TextColor3 = Color3.fromRGB(0,0,0)
+
+    local closeBtn = Instance.new("TextButton", topbar)
+    closeBtn.Name = "CloseBtn"
+    closeBtn.Text = "-"
+    closeBtn.Size = UDim2.new(0,26,0,22)
+    closeBtn.Position = UDim2.new(0,335,0,0)
+    closeBtn.BackgroundTransparency = 1
+    closeBtn.TextColor3 = Color3.fromRGB(0,0,0)
+    closeBtn.TextScaled = true
+
+    local removeBtn = Instance.new("TextButton", topbar)
+    removeBtn.Name = "RemoveBtn"
+    removeBtn.Text = "×"
+    removeBtn.Size = UDim2.new(0,26,0,22)
+    removeBtn.Position = UDim2.new(0,370,0,0)
+    removeBtn.BackgroundTransparency = 1
+    removeBtn.TextColor3 = Color3.fromRGB(0,0,0)
+    removeBtn.TextScaled = true
+    removeBtn.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+    end)
+
+    local scrollingFrame = Instance.new("ScrollingFrame", mainFrame)
+    scrollingFrame.Size = UDim2.new(0,402,0,195)
+    scrollingFrame.Position = UDim2.new(0,3,0,33)
+    scrollingFrame.BackgroundTransparency = 1
+    scrollingFrame.BorderSizePixel = 0
+    scrollingFrame.ScrollBarThickness = 3
+
+    local selfWindow = {}
+    selfWindow.MainFrame = mainFrame
+    selfWindow.ScrollingFrame = scrollingFrame
+    selfWindow.ScreenGui = screenGui
+    setmetatable(selfWindow, WertUi)
+
+    return selfWindow
+end
+
+function WertUi:OpenButton(options)
+    options = options or {}
+    local screenGui = self.MainFrame.Parent
+    local openButtonFrame = Instance.new("Frame", screenGui)
+    openButtonFrame.Name = "OpenButton"
+    openButtonFrame.Size = UDim2.new(0,160,0,46)
+    openButtonFrame.Position = UDim2.new(0,40,0,0)
+    openButtonFrame.Visible = false
+    openButtonFrame.Active = true
+    openButtonFrame.Draggable = true
+    openButtonFrame.BackgroundColor3 = Color3.fromRGB(185,185,185)
+    createUICorner(openButtonFrame, options.CornerRadius or UDim.new(1,0))
+
+    local openTextBtn = Instance.new("TextButton", openButtonFrame)
+    openTextBtn.Name = "TextBtn"
+    openTextBtn.Text = options.Title or "Open"
+    openTextBtn.Size = UDim2.new(0,104,0,34)
+    openTextBtn.Position = UDim2.new(0,48,0,6)
+    openTextBtn.BackgroundTransparency = 1
+    openTextBtn.TextScaled = true
+    openTextBtn.TextColor3 = Color3.fromRGB(0,0,0)
+
+    local icon
+    if options.Icon then
+        icon = Instance.new("ImageLabel", openButtonFrame)
+        icon.Name = "Icon"
+        icon.Size = UDim2.new(0,30,0,30)
+        icon.Position = UDim2.new(0,11,0,8)
+        icon.BackgroundTransparency = 1
+        icon.Image = options.Icon
+    end
+
+    -- Logic OpenButton
+    openTextBtn.MouseButton1Click:Connect(function()
+        self.MainFrame.Visible = true
+        openButtonFrame.Visible = false
+    end)
+
+    -- Logic CloseBtn
+    local closeBtn = self.MainFrame:FindFirstChild("Topbar"):FindFirstChild("CloseBtn")
+    if closeBtn then
+        closeBtn.MouseButton1Click:Connect(function()
+            self.MainFrame.Visible = false
+            openButtonFrame.Visible = true
+        end)
+    end
+end
+
+function WertUi:Button(options)
+    options = options or {}
+    local button = Instance.new("TextButton", self.ScrollingFrame)
+    button.Text = options.Title or "Button"
+    button.Size = UDim2.new(0,378,0,36)
+    button.Position = UDim2.new(0,10,0,#self.ScrollingFrame:GetChildren()*48)
+    button.BackgroundColor3 = Color3.fromRGB(186,186,186)
+    button.TextColor3 = Color3.fromRGB(0,0,0)
+    button.TextScaled = true
+    button.BorderSizePixel = 0
+    createUICorner(button)
+    if options.Callback then
+        button.MouseButton1Click:Connect(options.Callback)
+    end
+    return button
+end
+
+function WertUi:Toggle(options)
+    options = options or {}
+    local toggle = Instance.new("TextButton", self.ScrollingFrame)
+    toggle.Size = UDim2.new(0,378,0,36)
+    toggle.Position = UDim2.new(0,10,0,#self.ScrollingFrame:GetChildren()*48)
+    toggle.BackgroundColor3 = Color3.fromRGB(186,186,186)
+    toggle.BorderSizePixel = 0
+    createUICorner(toggle)
+
+    local toggleTitle = Instance.new("TextLabel", toggle)
+    toggleTitle.Size = UDim2.new(0,282,0,28)
+    toggleTitle.Position = UDim2.new(0,10,0,4)
+    toggleTitle.Text = options.Title or "" 
+    toggleTitle.BackgroundTransparency = 1
+    toggleTitle.TextScaled = true
+    toggleTitle.TextXAlignment = Enum.TextXAlignment.Left
+    toggleTitle.TextColor3 = Color3.fromRGB(0,0,0)
+
+    local switch = Instance.new("TextButton", toggle)
+    switch.Size = UDim2.new(0,60,0,28)
+    switch.Position = UDim2.new(0,308,0,4)
+    switch.BackgroundColor3 = Color3.fromRGB(145,145,145)
+    switch.BorderSizePixel = 0
+    createUICorner(switch, UDim.new(1,0))
+
+    local track = Instance.new("Frame", switch)
+    track.Size = UDim2.new(0,26,0,26)
+    track.Position = UDim2.new(0,2,0,1)
+    track.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    track.BorderSizePixel = 0
+    createUICorner(track, UDim.new(1,0))
+
+    local state = false
+    local function updateTrack()
+        if state then
+            track.Position = UDim2.new(0,32,0,1)
+        else
+            track.Position = UDim2.new(0,2,0,1)
+        end
+    end
+
+    local function updateTrack()
+    if state then
+        track.Position = UDim2.new(0,32,0,1)
+        switch.BackgroundColor3 = Color3.fromRGB(75, 198, 219) 
+    else
+        track.Position = UDim2.new(0,2,0,1)
+        switch.BackgroundColor3 = Color3.fromRGB(145,145,145) -- màu khi tắt
+    end
+end
+
+local function toggleState()
+    state = not state
+    updateTrack()  
+    if options.Callback then
+        options.Callback(state)
+    end
+end
+
+    switch.MouseButton1Click:Connect(toggleState)
+    toggle.MouseButton1Click:Connect(toggleState)
+
+    return toggle
+end
+
+function WertUi:Divider()
+    local divider = Instance.new("Frame", self.ScrollingFrame)
+    divider.Size = UDim2.new(0,378,0,3)
+    divider.Position = UDim2.new(0,10,0,#self.ScrollingFrame:GetChildren()*48)
+    divider.BackgroundColor3 = Color3.fromRGB(142,142,142)
+    divider.BorderSizePixel = 0
+    return divider
+end
+
+return WertUi
