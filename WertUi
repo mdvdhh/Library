@@ -1,4 +1,4 @@
---// WertUi Library v2
+--// WertUi Library
 local WertUi = {}
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
@@ -7,6 +7,7 @@ function WertUi:CreateWindow(config)
     local Window = {}
     local Title = config.Title or "WertUi"
     local CornerRadius = config.Corner or 10
+    local Size = config.Size or UDim2.fromOffset(280, 300)
 
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = Title
@@ -17,12 +18,11 @@ function WertUi:CreateWindow(config)
     Main.Parent = ScreenGui
     Main.AnchorPoint = Vector2.new(0.5, 0.5)
     Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Main.Size = UDim2.new(0, 280, 0, 300)
+    Main.Size = Size
     Main.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
     Main.BorderSizePixel = 0
     Main.Active = true
     Main.Draggable = true
-
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, CornerRadius)
 
     local TitleLabel = Instance.new("TextLabel")
@@ -97,34 +97,19 @@ function WertUi:CreateWindow(config)
         Btn.TextXAlignment = Enum.TextXAlignment.Left
         Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
 
-        local Type = string.lower(cfg.Type or "switch")
         local Enabled = false
         local Indicator = Instance.new("Frame")
         Indicator.Parent = Frame
+        Indicator.Size = UDim2.new(0, 22, 0, 22)
         Indicator.Position = UDim2.new(1, -26, 0.5, -11)
         Indicator.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-
-        if Type == "switch" then
-            Indicator.Size = UDim2.new(0, 22, 0, 22)
-            Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
-        elseif Type == "checkbox" then
-            Indicator.Size = UDim2.new(0, 20, 0, 20)
-            local UIStroke = Instance.new("UIStroke", Indicator)
-            UIStroke.Thickness = 1
-            UIStroke.Color = Color3.fromRGB(100, 100, 100)
-            Indicator.BackgroundTransparency = 1
-        end
+        Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
 
         local function setState(state)
             Enabled = state
-            if Type == "switch" then
-                TweenService:Create(Indicator, TweenInfo.new(0.2), {
-                    BackgroundColor3 = Enabled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(60, 60, 60)
-                }):Play()
-            elseif Type == "checkbox" then
-                Indicator.BackgroundTransparency = Enabled and 0 or 1
-                Indicator.BackgroundColor3 = Enabled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(60, 60, 60)
-            end
+            TweenService:Create(Indicator, TweenInfo.new(0.15), {
+                BackgroundColor3 = Enabled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(60, 60, 60)
+            }):Play()
             pcall(cfg.Callback, Enabled)
         end
 
