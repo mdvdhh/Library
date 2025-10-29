@@ -1,6 +1,5 @@
---// WertUi Library
+--// WertUi Library v2
 local WertUi = {}
-
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 
@@ -9,83 +8,82 @@ function WertUi:CreateWindow(config)
     local Title = config.Title or "WertUi"
     local CornerRadius = config.Corner or 10
 
-    -- ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = Title
     ScreenGui.Parent = CoreGui
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-    -- Main Frame
     local Main = Instance.new("Frame")
     Main.Parent = ScreenGui
     Main.AnchorPoint = Vector2.new(0.5, 0.5)
     Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Main.Size = UDim2.new(0, 300, 0, 400)
-    Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Main.Size = UDim2.new(0, 280, 0, 300)
+    Main.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
     Main.BorderSizePixel = 0
     Main.Active = true
     Main.Draggable = true
 
-    local Corner = Instance.new("UICorner", Main)
-    Corner.CornerRadius = UDim.new(0, CornerRadius)
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, CornerRadius)
 
-    local UIList = Instance.new("UIListLayout", Main)
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Parent = Main
+    TitleLabel.Text = Title
+    TitleLabel.Size = UDim2.new(1, -20, 0, 28)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 4)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 17
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local Holder = Instance.new("ScrollingFrame")
+    Holder.Parent = Main
+    Holder.Size = UDim2.new(1, -10, 1, -38)
+    Holder.Position = UDim2.new(0, 5, 0, 34)
+    Holder.BackgroundTransparency = 1
+    Holder.ScrollBarThickness = 4
+    Holder.CanvasSize = UDim2.new(0, 0, 0, 0)
+    Holder.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+    local UIList = Instance.new("UIListLayout", Holder)
     UIList.Padding = UDim.new(0, 6)
     UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     UIList.SortOrder = Enum.SortOrder.LayoutOrder
 
-    local Padding = Instance.new("UIPadding", Main)
-    Padding.PaddingTop = UDim.new(0, 8)
+    local Padding = Instance.new("UIPadding", Holder)
+    Padding.PaddingTop = UDim.new(0, 4)
 
-    -- Title
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Parent = Main
-    TitleLabel.Text = Title
-    TitleLabel.Size = UDim2.new(1, -20, 0, 30)
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.TextSize = 18
-
-    -- Section
     function Window:Section(cfg)
         local Sec = Instance.new("TextLabel")
-        Sec.Parent = Main
+        Sec.Parent = Holder
         Sec.Text = cfg.Title or "Section"
-        Sec.Size = UDim2.new(1, -20, 0, 26)
+        Sec.Size = UDim2.new(1, -20, 0, 22)
         Sec.BackgroundTransparency = 1
         Sec.TextColor3 = Color3.fromRGB(170, 170, 170)
         Sec.Font = Enum.Font.GothamBold
         Sec.TextXAlignment = Enum.TextXAlignment[cfg.TextXAlignment or "Left"]
-        Sec.TextSize = cfg.TextSize or 16
+        Sec.TextSize = cfg.TextSize or 15
         return Sec
     end
 
-    -- Button
     function Window:Button(cfg)
         local Btn = Instance.new("TextButton")
-        Btn.Parent = Main
+        Btn.Parent = Holder
         Btn.Text = cfg.Title or "Button"
-        Btn.Size = UDim2.new(1, -20, 0, 32)
+        Btn.Size = UDim2.new(1, -20, 0, 28)
         Btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
         Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
         Btn.Font = Enum.Font.Gotham
-        Btn.TextSize = 15
-
-        local Corner = Instance.new("UICorner", Btn)
-        Corner.CornerRadius = UDim.new(0, 8)
-
-        Btn.MouseButton1Click:Connect(function()
-            pcall(cfg.Callback)
-        end)
+        Btn.TextSize = 14
+        Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
+        Btn.MouseButton1Click:Connect(function() pcall(cfg.Callback) end)
         return Btn
     end
 
-    -- Toggle
     function Window:Toggle(cfg)
         local Frame = Instance.new("Frame")
-        Frame.Parent = Main
-        Frame.Size = UDim2.new(1, -20, 0, 32)
+        Frame.Parent = Holder
+        Frame.Size = UDim2.new(1, -20, 0, 28)
         Frame.BackgroundTransparency = 1
 
         local Btn = Instance.new("TextButton")
@@ -95,64 +93,63 @@ function WertUi:CreateWindow(config)
         Btn.Text = cfg.Title or "Toggle"
         Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
         Btn.Font = Enum.Font.Gotham
-        Btn.TextSize = 15
+        Btn.TextSize = 14
         Btn.TextXAlignment = Enum.TextXAlignment.Left
+        Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
 
-        local Corner = Instance.new("UICorner", Btn)
-        Corner.CornerRadius = UDim.new(0, 8)
-
-        local Switch = Instance.new("Frame")
-        Switch.Parent = Frame
-        Switch.Size = UDim2.new(0, 26, 0, 26)
-        Switch.Position = UDim2.new(1, -28, 0.5, -13)
-        Switch.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        local SwCorner = Instance.new("UICorner", Switch)
-        SwCorner.CornerRadius = UDim.new(1, 0)
-
+        local Type = string.lower(cfg.Type or "switch")
         local Enabled = false
-        Btn.MouseButton1Click:Connect(function()
-            Enabled = not Enabled
-            TweenService:Create(Switch, TweenInfo.new(0.2), {
-                BackgroundColor3 = Enabled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(60, 60, 60)
-            }):Play()
-            pcall(cfg.Callback, Enabled)
-        end)
+        local Indicator = Instance.new("Frame")
+        Indicator.Parent = Frame
+        Indicator.Position = UDim2.new(1, -26, 0.5, -11)
+        Indicator.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 
+        if Type == "switch" then
+            Indicator.Size = UDim2.new(0, 22, 0, 22)
+            Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
+        elseif Type == "checkbox" then
+            Indicator.Size = UDim2.new(0, 20, 0, 20)
+            local UIStroke = Instance.new("UIStroke", Indicator)
+            UIStroke.Thickness = 1
+            UIStroke.Color = Color3.fromRGB(100, 100, 100)
+            Indicator.BackgroundTransparency = 1
+        end
+
+        local function setState(state)
+            Enabled = state
+            if Type == "switch" then
+                TweenService:Create(Indicator, TweenInfo.new(0.2), {
+                    BackgroundColor3 = Enabled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(60, 60, 60)
+                }):Play()
+            elseif Type == "checkbox" then
+                Indicator.BackgroundTransparency = Enabled and 0 or 1
+                Indicator.BackgroundColor3 = Enabled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(60, 60, 60)
+            end
+            pcall(cfg.Callback, Enabled)
+        end
+
+        Btn.MouseButton1Click:Connect(function() setState(not Enabled) end)
         return Frame
     end
 
-    -- Input
     function Window:Input(cfg)
-        local Frame = Instance.new("Frame")
-        Frame.Parent = Main
-        Frame.Size = UDim2.new(1, -20, 0, 32)
-        Frame.BackgroundTransparency = 1
-
         local Box = Instance.new("TextBox")
-        Box.Parent = Frame
-        Box.Size = UDim2.new(1, 0, 1, 0)
+        Box.Parent = Holder
+        Box.Size = UDim2.new(1, -20, 0, 28)
         Box.PlaceholderText = cfg.Placeholder or "Enter text..."
         Box.Text = ""
         Box.TextColor3 = Color3.fromRGB(255, 255, 255)
         Box.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
         Box.Font = Enum.Font.Gotham
-        Box.TextSize = 15
-
-        local Corner = Instance.new("UICorner", Box)
-        Corner.CornerRadius = UDim.new(0, 8)
-
-        Box.FocusLost:Connect(function(enter)
-            if enter then
-                pcall(cfg.Callback, Box.Text)
-            end
-        end)
-        return Frame
+        Box.TextSize = 14
+        Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 8)
+        Box.FocusLost:Connect(function(e) if e then pcall(cfg.Callback, Box.Text) end end)
+        return Box
     end
 
-    -- Divider
     function Window:Divider()
         local Line = Instance.new("Frame")
-        Line.Parent = Main
+        Line.Parent = Holder
         Line.Size = UDim2.new(1, -20, 0, 1)
         Line.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         return Line
