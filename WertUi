@@ -34,6 +34,7 @@ function WertUi:CreateWindow(config)
     TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     TitleLabel.Font = Enum.Font.GothamBold
     TitleLabel.TextSize = 17
+    TitleLabel.TextScaled = true
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
     local Holder = Instance.new("ScrollingFrame")
@@ -75,6 +76,7 @@ function WertUi:CreateWindow(config)
         Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
         Btn.Font = Enum.Font.Gotham
         Btn.TextSize = 14
+        Btn.TextScaled = true
         Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
         Btn.MouseButton1Click:Connect(function() pcall(cfg.Callback) end)
         return Btn
@@ -94,6 +96,7 @@ function WertUi:CreateWindow(config)
         Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
         Btn.Font = Enum.Font.Gotham
         Btn.TextSize = 14
+        Btn.TextScaled = true
         Btn.TextXAlignment = Enum.TextXAlignment.Left
         Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
 
@@ -127,6 +130,7 @@ function WertUi:CreateWindow(config)
         Box.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
         Box.Font = Enum.Font.Gotham
         Box.TextSize = 14
+        Box.TextScaled = true
         Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 8)
         Box.FocusLost:Connect(function(e) if e then pcall(cfg.Callback, Box.Text) end end)
         return Box
