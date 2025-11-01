@@ -1,0 +1,183 @@
+local EightUi = {}
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+local Theme = {
+    Accent = Color3.fromRGB(0, 170, 255),
+    Background = Color3.fromRGB(28, 28, 28),
+    Button = Color3.fromRGB(45, 45, 45),
+    Text = Color3.fromRGB(255, 255, 255)
+}
+
+function EightUi:SetTheme(newTheme)
+    for k, v in pairs(newTheme) do
+        Theme[k] = v
+    end
+end
+
+function EightUi:CreateWindow(settings)
+    local Title = settings.Title or "EightUi"
+    local Corner = settings.Corner or 5
+    local Size = settings.Size or UDim2.fromOffset(300, 300)
+
+    local ScreenGui = Instance.new("ScreenGui", CoreGui)
+    ScreenGui.Name = Title
+    local Main = Instance.new("Frame", ScreenGui)
+    Main.BackgroundColor3 = Theme.Background
+    Main.Size = Size
+    Main.Position = UDim2.new(0.5, -Size.X.Offset/2, 0.5, -Size.Y.Offset/2)
+    Main.Active = true
+    Main.Draggable = true
+
+    local UICorner = Instance.new("UICorner", Main)
+    UICorner.CornerRadius = UDim.new(0, Corner)
+
+    local TitleBar = Instance.new("Frame", Main)
+    TitleBar.BackgroundColor3 = Theme.Accent
+    TitleBar.Size = UDim2.new(1, 0, 0, 30)
+    Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 5)
+
+    local TitleLabel = Instance.new("TextLabel", TitleBar)
+    TitleLabel.Text = Title
+    TitleLabel.TextColor3 = Theme.Text
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Size = UDim2.new(1, -10, 1, 0)
+    TitleLabel.Position = UDim2.new(0, 5, 0, 0)
+    TitleLabel.Font = Enum.Font.Gotham
+    TitleLabel.TextSize = 15
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local TabContainer = Instance.new("Frame", Main)
+    TabContainer.BackgroundTransparency = 1
+    TabContainer.Size = UDim2.new(1, 0, 1, -35)
+    TabContainer.Position = UDim2.new(0, 0, 0, 35)
+
+    local UIList = Instance.new("UIListLayout", TabContainer)
+    UIList.Padding = UDim.new(0, 5)
+
+    local Window = {}
+
+    function Window:EditToggle(config)
+        local Button = Instance.new("TextButton", Main)
+        Button.Text = config.Title or "Toggle"
+        Button.Size = UDim2.new(0, 60, 0, 25)
+        Button.Position = UDim2.new(1, -70, 0, 2)
+        Button.BackgroundColor3 = Theme.Button
+        Button.TextColor3 = Theme.Text
+        Button.Font = Enum.Font.Gotham
+        Button.TextSize = 13
+        Instance.new("UICorner", Button).CornerRadius = UDim.new(0, config.Corner or 5)
+        local open = true
+        Button.MouseButton1Click:Connect(function()
+            open = not open
+            Main.Visible = open
+        end)
+    end
+
+    function Window:Tab(tabInfo)
+        local Tab = Instance.new("Frame", TabContainer)
+        Tab.Size = UDim2.new(1, 0, 0, 200)
+        Tab.BackgroundColor3 = Theme.Button
+        Instance.new("UICorner", Tab).CornerRadius = UDim.new(0, 5)
+
+        local Title = Instance.new("TextLabel", Tab)
+        Title.Text = tabInfo.Title or "Tab"
+        Title.Size = UDim2.new(1, 0, 0, 25)
+        Title.BackgroundTransparency = 1
+        Title.TextColor3 = Theme.Text
+        Title.Font = Enum.Font.Gotham
+        Title.TextSize = 15
+
+        local Elements = Instance.new("Frame", Tab)
+        Elements.Size = UDim2.new(1, -10, 1, -30)
+        Elements.Position = UDim2.new(0, 5, 0, 25)
+        Elements.BackgroundTransparency = 1
+        local List = Instance.new("UIListLayout", Elements)
+        List.Padding = UDim.new(0, 5)
+
+        local t = {}
+
+        function t:Button(btnInfo)
+            local Btn = Instance.new("TextButton", Elements)
+            Btn.Text = btnInfo.Title or "Button"
+            Btn.Size = UDim2.new(1, 0, 0, 25)
+            Btn.BackgroundColor3 = Theme.Accent
+            Btn.TextColor3 = Theme.Text
+            Btn.Font = Enum.Font.Gotham
+            Btn.TextSize = 14
+            Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 5)
+            Btn.MouseButton1Click:Connect(function()
+                if btnInfo.Callback then btnInfo.Callback() end
+            end)
+        end
+
+        function t:Section(info)
+            local Section = Instance.new("TextLabel", Elements)
+            Section.Text = info.Title or "Section"
+            Section.Size = UDim2.new(1, 0, 0, 25)
+            Section.BackgroundColor3 = Theme.Button
+            Section.TextColor3 = Theme.Text
+            Section.Font = Enum.Font.Gotham
+            Section.TextSize = info.TextSize or 15
+            Instance.new("UICorner", Section).CornerRadius = UDim.new(0, 5)
+        end
+
+        function t:Toggle(info)
+            local Frame = Instance.new("Frame", Elements)
+            Frame.Size = UDim2.new(1, 0, 0, 25)
+            Frame.BackgroundColor3 = Theme.Button
+            Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 5)
+
+            local Label = Instance.new("TextLabel", Frame)
+            Label.Text = info.Title or "Toggle"
+            Label.Size = UDim2.new(0.8, 0, 1, 0)
+            Label.BackgroundTransparency = 1
+            Label.TextColor3 = Theme.Text
+            Label.Font = Enum.Font.Gotham
+            Label.TextSize = 14
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Position = UDim2.new(0, 5, 0, 0)
+
+            local Button = Instance.new("TextButton", Frame)
+            Button.Size = UDim2.new(0, 40, 0, 18)
+            Button.Position = UDim2.new(1, -45, 0.5, -9)
+            Button.BackgroundColor3 = Theme.Accent
+            Button.Text = ""
+            Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 5)
+
+            local state = false
+            Button.MouseButton1Click:Connect(function()
+                state = not state
+                Button.BackgroundColor3 = state and Theme.Accent or Theme.Button
+                if info.Callback then info.Callback(state) end
+            end)
+        end
+
+        function t:TextBox(info)
+            local Box = Instance.new("TextBox", Elements)
+            Box.Text = info.Title or ""
+            Box.PlaceholderText = info.Placeholder or "Type here..."
+            Box.Size = UDim2.new(1, 0, 0, 25)
+            Box.BackgroundColor3 = Theme.Button
+            Box.TextColor3 = Theme.Text
+            Box.Font = Enum.Font.Gotham
+            Box.TextSize = 14
+            Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 5)
+            Box.FocusLost:Connect(function()
+                if info.Callback then info.Callback(Box.Text) end
+            end)
+        end
+
+        return t
+    end
+
+    function Window:Divider()
+        local Line = Instance.new("Frame", TabContainer)
+        Line.Size = UDim2.new(1, 0, 0, 2)
+        Line.BackgroundColor3 = Theme.Accent
+    end
+
+    return Window
+end
+
+return EightUi
