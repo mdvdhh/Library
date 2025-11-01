@@ -98,6 +98,7 @@ function WertUi:Notify(settings)
 	TitleLabel.BackgroundTransparency = 1
 	TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 	TitleLabel.TextWrapped = true
+	TitleLabel.TextScaled = true
 	TitleLabel.AutomaticSize = Enum.AutomaticSize.Y
 	TitleLabel.Size = UDim2.new(1, 0, 0, 20)
 	TitleLabel.Parent = TextHolder
@@ -139,3 +140,4 @@ function WertUi:Notify(settings)
 end
 
 return WertUi
+
