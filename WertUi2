@@ -1,0 +1,539 @@
+local WertUi = {}
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+-- Default Theme
+local Theme = {
+    Accent = Color3.fromRGB(0, 170, 255),
+    Background = Color3.fromRGB(28, 28, 28),
+    Button = Color3.fromRGB(45, 45, 45),
+    Text = Color3.fromRGB(255, 255, 255)
+}
+
+function WertUi:SetTheme(newTheme)
+    for k, v in pairs(newTheme) do
+        if Theme[k] then
+            Theme[k] = v
+        end
+    end
+    if self._instances then
+        for _, obj in ipairs(self._instances) do
+            if obj:IsA("Frame") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+                if obj:GetAttribute("ui_type") == "main" then
+                    obj.BackgroundColor3 = Theme.Background
+                elseif obj:GetAttribute("ui_type") == "button" or obj:GetAttribute("ui_type") == "input" then
+                    obj.BackgroundColor3 = Theme.Button
+                elseif obj:GetAttribute("ui_type") == "indicator" then
+                    obj.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+                end
+            elseif obj:IsA("TextLabel") then
+                obj.TextColor3 = Theme.Text
+            end
+        end
+    end
+end
+
+function WertUi:CreateWindow(config)
+    local Window = {}
+    self._instances = self._instances or {}
+    local Title = config.Title or "WertUi"
+    local CornerRadius = config.Corner or 10
+    local Size = config.Size or UDim2.fromOffset(280, 300)
+
+    local charset = "QWERTYUIOPASDFGHJKLZXCVBNM1234567890"
+local function randomName(length)
+    local name = ""
+    for i = 1, length do
+        local rand = math.random(1, #charset)
+        name = name .. string.sub(charset, rand, rand)
+    end
+    return name
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = randomName(8)
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+local parent = gethui and gethui() or game:GetService("CoreGui")
+ScreenGui.Parent = parent
+
+    local Main = Instance.new("Frame")
+    Main.Parent = ScreenGui
+    Main.AnchorPoint = Vector2.new(0.5, 0.5)
+    Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Main.Size = Size
+    Main.BackgroundColor3 = Theme.Background
+    Main.BorderSizePixel = 0
+    Main.Active = true
+    Main.Draggable = true
+    Main:SetAttribute("ui_type", "main")
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, CornerRadius)
+    table.insert(self._instances, Main)
+    
+local UIScale = Instance.new("UIScale")
+   UIScale.Parent = Main
+
+local function adjustScale()
+    local viewportSize = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1920, 1080)
+    local minSize = math.min(viewportSize.X, viewportSize.Y)
+
+    if minSize < 800 then
+        UIScale.Scale = 0.75
+    elseif minSize < 1200 then
+        UIScale.Scale = 0.9
+    else
+        UIScale.Scale = 1
+    end
+end
+
+adjustScale()
+
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+    task.wait(0.2)
+    adjustScale()
+end)
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if workspace.CurrentCamera then
+        adjustScale()
+    end
+end)
+    
+    local buttonHolder = Instance.new("Frame")
+    buttonHolder.Name = "ButtonHolder"
+    buttonHolder.BackgroundTransparency = 1
+    buttonHolder.Size = UDim2.new(0, 60, 0, 25)
+    buttonHolder.Position = UDim2.new(1, -65, 0, 4)
+    buttonHolder.Parent = Main
+
+    local close = Instance.new("TextButton")
+    close.Name = "CloseButton"
+    close.Parent = buttonHolder
+    close.BackgroundColor3 = Theme.Button
+    close.Size = UDim2.new(0, 25, 0, 25)
+    close.Position = UDim2.new(0, 35, 0, 0)
+    close.Text = "×"
+close.TextColor3 = Theme.Text
+close.Font = Enum.Font.GothamBold
+close.TextSize = 18
+Instance.new("UICorner", close).CornerRadius = UDim.new(0, 6)
+
+    local function hoverEffect(btn)
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {
+            BackgroundColor3 = Theme.Accent
+        }):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {
+            BackgroundColor3 = Theme.Button
+        }):Play()
+    end)
+end
+hoverEffect(close)
+
+close.MouseButton1Click:Connect(function()
+    local ConfirmFrame = Instance.new("Frame")
+    ConfirmFrame.Size = UDim2.new(0, 260, 0, 140)
+    ConfirmFrame.Position = UDim2.new(0.5, -130, 0.5, -70)
+    ConfirmFrame.BackgroundColor3 = Theme.Background
+    ConfirmFrame.Parent = Main
+    ConfirmFrame.BackgroundTransparency = 1
+    ConfirmFrame:SetAttribute("ui_type", "main")
+    Instance.new("UICorner", ConfirmFrame).CornerRadius = UDim.new(0, 10)
+    local UIStroke1 = Instance.new("UIStroke")
+UIStroke1.Parent = ConfirmFrame
+UIStroke1.Thickness = 1.1
+UIStroke1.Color = Theme.Accent
+
+
+    TweenService:Create(ConfirmFrame, TweenInfo.new(0.25), {
+        BackgroundTransparency = 0
+    }):Play()
+
+    local Title = Instance.new("TextLabel")
+    Title.Parent = ConfirmFrame
+    Title.Size = UDim2.new(1, -20, 0, 40)
+    Title.Position = UDim2.new(0, 10, 0, 10)
+    Title.BackgroundTransparency = 1
+    Title.Text = "Are you sure you want to close?"
+    Title.Font = Enum.Font.GothamSemibold
+    Title.TextColor3 = Theme.Text
+    Title.TextScaled = true
+    Title.TextWrapped = true
+
+    local NoBtn = Instance.new("TextButton")
+    NoBtn.Parent = ConfirmFrame
+    NoBtn.Size = UDim2.new(0, 100, 0, 35)
+    NoBtn.Position = UDim2.new(0, 20, 1, -55)
+    NoBtn.BackgroundColor3 = Theme.Button
+    NoBtn.Text = "Not"
+    NoBtn.TextColor3 = Theme.Text
+    NoBtn.Font = Enum.Font.GothamBold
+    NoBtn.TextSize = 16
+    Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0, 8)
+
+    local YesBtn = Instance.new("TextButton")
+    YesBtn.Parent = ConfirmFrame
+    YesBtn.Size = UDim2.new(0, 100, 0, 35)
+    YesBtn.Position = UDim2.new(1, -120, 1, -55)
+    YesBtn.BackgroundColor3 = Theme.Button
+    YesBtn.Text = "Sure"
+    YesBtn.TextColor3 = Theme.Text
+    YesBtn.Font = Enum.Font.GothamBold
+    YesBtn.TextSize = 16
+    Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0, 8)
+
+    hoverEffect(NoBtn)
+    hoverEffect(YesBtn)
+
+    NoBtn.MouseButton1Click:Connect(function()
+        TweenService:Create(ConfirmFrame, TweenInfo.new(0.2), {
+            BackgroundTransparency = 1
+        }):Play()
+        task.wait(0.2)
+        ConfirmFrame:Destroy()
+    end)
+
+    YesBtn.MouseButton1Click:Connect(function()
+        TweenService:Create(Main, TweenInfo.new(0.3), {
+            BackgroundTransparency = 1
+        }):Play()
+        task.wait(0.25)
+        ScreenGui:Destroy()
+    end)
+end)
+
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Parent = Main
+    TitleLabel.Text = Title
+    TitleLabel.Size = UDim2.new(1, -55, 0, 28)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 4)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.TextColor3 = Theme.Text
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 17
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    table.insert(self._instances, TitleLabel)
+
+    local Holder = Instance.new("ScrollingFrame")
+    Holder.Parent = Main
+    Holder.Size = UDim2.new(1, -10, 1, -42)
+    Holder.Position = UDim2.new(0, 5, 0, 34)
+    Holder.BackgroundTransparency = 1
+    Holder.ScrollBarThickness = 4
+    Holder.BorderSizePixel = 0
+    Holder.CanvasSize = UDim2.new(0, 0, 0, 0)
+    Holder.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+    local UIList = Instance.new("UIListLayout", Holder)
+    UIList.Padding = UDim.new(0, 6)
+    UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    UIList.SortOrder = Enum.SortOrder.LayoutOrder
+    Instance.new("UIPadding", Holder).PaddingTop = UDim.new(0, 4)
+
+    function Window:Section(cfg)
+        local Sec = Instance.new("TextLabel")
+        Sec.Parent = Holder
+        Sec.Text = cfg.Title or "Section"
+        Sec.Size = UDim2.new(1, -20, 0, 22)
+        Sec.BackgroundTransparency = 1
+        Sec.TextColor3 = Color3.fromRGB(170, 170, 170)
+        Sec.Font = Enum.Font.GothamBold
+        Sec.TextXAlignment = Enum.TextXAlignment[cfg.TextXAlignment or "Left"]
+        Sec.TextSize = cfg.TextSize or 15
+        table.insert(WertUi._instances, Sec)
+        return Sec
+    end
+
+    function Window:Button(cfg)
+        local Btn = Instance.new("TextButton")
+        Btn.Parent = Holder
+        Btn.Text = cfg.Title or "Button"
+        Btn.Size = UDim2.new(1, -20, 0, 28)
+        Btn.BackgroundColor3 = Theme.Button
+        Btn.TextColor3 = Theme.Text
+        Btn.Font = Enum.Font.Gotham
+        Btn.TextSize = 14
+        Btn:SetAttribute("ui_type", "button")
+        Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
+        table.insert(WertUi._instances, Btn)
+        Btn.MouseButton1Click:Connect(function() pcall(cfg.Callback) end)
+        return Btn
+    end
+
+    function Window:Toggle(cfg)
+        local Frame = Instance.new("Frame")
+        Frame.Parent = Holder
+        Frame.Size = UDim2.new(1, -20, 0, 28)
+        Frame.BackgroundTransparency = 1
+
+        local Btn = Instance.new("TextButton")
+        Btn.Parent = Frame
+        Btn.Size = UDim2.new(1, -40, 1, 0)
+        Btn.BackgroundColor3 = Theme.Button
+        Btn.Text = cfg.Title or "Toggle"
+        Btn.TextColor3 = Theme.Text
+        Btn.Font = Enum.Font.Gotham
+        Btn.TextSize = 14
+        Btn.TextXAlignment = Enum.TextXAlignment.Left
+        Btn:SetAttribute("ui_type", "button")
+        Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
+        table.insert(WertUi._instances, Btn)
+
+        local Enabled = false
+        local Indicator = Instance.new("Frame")
+        Indicator.Parent = Frame
+        Indicator.Size = UDim2.new(0, 22, 0, 22)
+        Indicator.Position = UDim2.new(1, -26, 0.5, -11)
+        Indicator.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        Indicator:SetAttribute("ui_type", "indicator")
+        Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
+        table.insert(WertUi._instances, Indicator)
+
+        local function setState(state)
+            Enabled = state
+            TweenService:Create(Indicator, TweenInfo.new(0.15), {
+                BackgroundColor3 = Enabled and Theme.Accent or Color3.fromRGB(60, 60, 60)
+            }):Play()
+            pcall(cfg.Callback, Enabled)
+        end
+
+        Btn.MouseButton1Click:Connect(function() setState(not Enabled) end)
+        return Frame
+    end
+
+    function Window:Input(cfg)
+        local Box = Instance.new("TextBox")
+        Box.Parent = Holder
+        Box.Size = UDim2.new(1, -20, 0, 28)
+        Box.PlaceholderText = cfg.Placeholder or "Enter text..."
+        Box.Text = ""
+        Box.TextColor3 = Theme.Text
+        Box.BackgroundColor3 = Theme.Button
+        Box.Font = Enum.Font.Gotham
+        Box.TextSize = 14
+        Box:SetAttribute("ui_type", "input")
+        Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 8)
+        table.insert(WertUi._instances, Box)
+        Box.FocusLost:Connect(function(e) if e then pcall(cfg.Callback, Box.Text) end end)
+        return Box
+    end
+
+    function Window:Divider()
+        local Line = Instance.new("Frame")
+        Line.Parent = Holder
+        Line.Size = UDim2.new(1, -20, 0, 3)
+        Line.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        Instance.new("UICorner", Line).CornerRadius = UDim.new(0, 8)
+        table.insert(WertUi._instances, Line)
+        return Line
+    end
+    
+function Window:EditToggle(config)
+    local Title = config.Title or "Open"
+    local Corner = config.Corner or 6
+
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Name = "EditToggle"
+    ToggleButton.Text = Title
+    ToggleButton.Parent = ScreenGui
+    ToggleButton.Size = UDim2.new(0, 100, 0, 35)
+    ToggleButton.Position = UDim2.new(0, 20, 0, 20)
+    ToggleButton.BackgroundColor3 = Theme.Button
+    ToggleButton.TextColor3 = Theme.Text
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.TextSize = 15
+    ToggleButton.Active = true
+    ToggleButton.Draggable = true
+    ToggleButton.AutoButtonColor = false
+    ToggleButton.Visible = true 
+
+    local UICorner = Instance.new("UICorner", ToggleButton)
+    UICorner.CornerRadius = UDim.new(0, Corner)
+
+    local UIStroke = Instance.new("UIStroke", ToggleButton)
+    UIStroke.Thickness = 1.1
+    UIStroke.Color = Theme.Accent
+
+    local open = true
+
+    local function hoverEffect(btn)
+        btn.MouseEnter:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.15), {
+                BackgroundColor3 = Theme.Accent
+            }):Play()
+        end)
+        btn.MouseLeave:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.15), {
+                BackgroundColor3 = Theme.Button
+            }):Play()
+        end)
+    end
+    hoverEffect(ToggleButton)
+
+    ToggleButton.MouseButton1Click:Connect(function()
+        open = not open
+        if open then
+            Main.Visible = true
+            TweenService:Create(Main, TweenInfo.new(0.3), {
+                Size = Size,
+                BackgroundTransparency = 0
+            }):Play()
+        else
+            TweenService:Create(Main, TweenInfo.new(0.3), {
+                Size = UDim2.new(0, 0, 0, 0),
+                BackgroundTransparency = 1
+            }):Play()
+            task.wait(0.3)
+            Main.Visible = false
+        end
+    end)
+end
+
+    return Window
+end
+
+return WertUi
+
+local WertUi = {}
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+
+local CoreGui = gethui and gethui() or game:GetService("CoreGui")
+
+local ScreenGui = CoreGui:FindFirstChild("WertUi_Notifications") or Instance.new("ScreenGui")
+ScreenGui.Name = "WertUi_Notifications"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = CoreGui
+
+local HolderFrame = ScreenGui:FindFirstChild("NotificationHolder") or Instance.new("Frame")
+HolderFrame.Name = "NotificationHolder"
+HolderFrame.BackgroundTransparency = 1
+HolderFrame.AnchorPoint = Vector2.new(1, 1)
+HolderFrame.Parent = ScreenGui
+
+local HolderLayout = HolderFrame:FindFirstChildOfClass("UIListLayout") or Instance.new("UIListLayout")
+HolderLayout.Padding = UDim.new(0, 10)
+HolderLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+HolderLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+HolderLayout.SortOrder = Enum.SortOrder.LayoutOrder
+HolderLayout.Parent = HolderFrame
+
+local function updateHolderPosition()
+	local camera = workspace.CurrentCamera
+	if not camera then return end
+	local screenSize = camera.ViewportSize
+	local width = math.clamp(screenSize.X * 0.35, 280, 400)
+	local padding = math.clamp(screenSize.X * 0.02, 10, 25)
+	HolderFrame.Size = UDim2.new(0, width, 1, -40)
+	HolderFrame.Position = UDim2.new(1, -padding, 1, -padding)
+end
+
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(updateHolderPosition)
+if workspace.CurrentCamera then
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateHolderPosition)
+end
+task.defer(updateHolderPosition)
+
+function WertUi:Notify(settings)
+	local Title = settings.Title or "Notification"
+	local Description = settings.Description or ""
+	local Duration = settings.Duration or 5
+	local CornerRadius = UDim.new(0, settings.Corner or 8)
+	local Transparent = settings.Transparent or 0.2
+	local Icon = settings.Icon or "rbxassetid://6034509993"
+
+	local Frame = Instance.new("Frame")
+	Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	Frame.BackgroundTransparency = Transparent
+	Frame.Size = UDim2.new(1, 0, 0, 60)
+	Frame.AutomaticSize = Enum.AutomaticSize.Y
+	Frame.ClipsDescendants = true
+	Frame.Parent = HolderFrame
+
+	local Corner = Instance.new("UICorner", Frame)
+	Corner.CornerRadius = CornerRadius
+
+	local Padding = Instance.new("UIPadding", Frame)
+	Padding.PaddingTop = UDim.new(0, 10)
+	Padding.PaddingBottom = UDim.new(0, 10)
+	Padding.PaddingLeft = UDim.new(0, 10)
+	Padding.PaddingRight = UDim.new(0, 10)
+
+	local IconLabel = Instance.new("ImageLabel")
+	IconLabel.Image = Icon
+	IconLabel.BackgroundTransparency = 1
+	IconLabel.Size = UDim2.new(0, 24, 0, 24)
+	IconLabel.Position = UDim2.new(0, 0, 0, 0)
+	IconLabel.Parent = Frame
+
+	local CloseButton = Instance.new("TextButton")
+	CloseButton.Text = "×"
+	CloseButton.Font = Enum.Font.GothamBold
+	CloseButton.TextSize = 14
+	CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	CloseButton.BackgroundTransparency = 1
+	CloseButton.Size = UDim2.new(0, 20, 0, 20)
+	CloseButton.Position = UDim2.new(1, -25, 0, 5)
+	CloseButton.Parent = Frame
+
+	local TextHolder = Instance.new("Frame")
+	TextHolder.BackgroundTransparency = 1
+	TextHolder.Size = UDim2.new(1, -70, 1, 0)
+	TextHolder.Position = UDim2.new(0, 35, 0, 0)
+	TextHolder.AutomaticSize = Enum.AutomaticSize.Y
+	TextHolder.Parent = Frame
+
+	local TitleLabel = Instance.new("TextLabel")
+	TitleLabel.Text = Title
+	TitleLabel.Font = Enum.Font.GothamSemibold
+	TitleLabel.TextSize = 16
+	TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	TitleLabel.BackgroundTransparency = 1
+	TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+	TitleLabel.TextWrapped = true
+	TitleLabel.Size = UDim2.new(1, 0, 0, 20)
+	TitleLabel.Parent = TextHolder
+
+	local DescriptionLabel = Instance.new("TextLabel")
+	DescriptionLabel.Text = Description
+	DescriptionLabel.Font = Enum.Font.Gotham
+	DescriptionLabel.TextSize = 14
+	DescriptionLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	DescriptionLabel.BackgroundTransparency = 1
+	DescriptionLabel.TextWrapped = true
+	DescriptionLabel.TextXAlignment = Enum.TextXAlignment.Left
+	DescriptionLabel.AutomaticSize = Enum.AutomaticSize.Y
+	DescriptionLabel.Size = UDim2.new(1, 0, 0, 20)
+	DescriptionLabel.Position = UDim2.new(0, 0, 0, 22)
+	DescriptionLabel.Parent = TextHolder
+
+	Frame.BackgroundTransparency = 1
+	Frame.Position = UDim2.new(1, 500, 0, 0)
+	local tweenIn = TweenService:Create(Frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0, 0, 0, 0),
+		BackgroundTransparency = Transparent
+	})
+	tweenIn:Play()
+
+	local function removeNotification()
+		local tweenOut = TweenService:Create(Frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+			Position = UDim2.new(1, 500, 0, 0),
+			BackgroundTransparency = 1
+		})
+		tweenOut:Play()
+		tweenOut.Completed:Connect(function()
+			Frame:Destroy()
+		end)
+	end
+
+	CloseButton.MouseButton1Click:Connect(removeNotification)
+	task.delay(Duration, removeNotification)
+end
+
+return WertUi
